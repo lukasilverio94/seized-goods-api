@@ -1,0 +1,65 @@
+// schema.prisma
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model SeizedGood {
+  id                Int                @id @default(autoincrement())
+  name              String
+  description       String
+  value             Float
+  status            GoodStatus         @default(PENDING)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  allocations       Allocation[]
+}
+
+model SocialOrganization {
+  id                Int                @id @default(autoincrement())
+  name              String
+  contactPerson     String
+  email             String
+  phone             String
+  address           String
+  qualifications    String              // Criteria or qualifications for receiving goods
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  allocations       Allocation[]
+}
+
+model Allocation {
+  id                Int                @id @default(autoincrement())
+  seizedGoodId      Int
+  organizationId    Int
+  allocatedAt       DateTime           @default(now())
+  purpose           String              // Purpose of allocation
+  createdAt         DateTime           @default(now())
+  
+  seizedGood        SeizedGood         @relation(fields: [seizedGoodId], references: [id])
+  socialOrganization SocialOrganization @relation(fields: [organizationId], references: [id])
+}
+
+model User {
+  id                Int                @id @default(autoincrement())
+  username          String              @unique
+  password          String              // Store hashed passwords
+  role              UserRole           @default(USER) // Enum for user roles
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+}
+
+enum GoodStatus {
+  PENDING
+  ALLOCATED
+  DESTROYED
+}
+
+enum UserRole {
+  ADMIN
+  USER
+}
