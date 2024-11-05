@@ -3,6 +3,11 @@ import prisma from "../../prisma/client.js";
 export const createSeizedGood = async (req, res, next) => {
   const { name, description, value } = req.body;
 
+  if (!name || !description || !value) {
+    return res
+      .status(400)
+      .json({ message: "Name, description and value are required fields." });
+  }
   try {
     const seizedGood = await prisma.seizedGood.create({
       data: {
@@ -14,7 +19,6 @@ export const createSeizedGood = async (req, res, next) => {
 
     res.status(201).json(seizedGood);
   } catch (error) {
-    res.status(500).json({ error: error.message });
     next(error);
   }
 };
@@ -24,7 +28,7 @@ export const getAllSeizedGoods = async (req, res) => {
     const seizedGoods = await prisma.seizedGood.findMany();
     res.status(201).json(seizedGoods);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    next(error);
   }
 };
 
@@ -41,7 +45,7 @@ export const getSeizedGoodById = async (req, res) => {
 
     res.json(seizedGood);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    next(error);
   }
 };
 
@@ -53,9 +57,9 @@ export const updateSeizedGood = async (req, res) => {
       where: { id: parseInt(id) },
       data: { name, description, value },
     });
-    res.json(updatedSeizedGood);
+    res.status(201).json(updatedSeizedGood);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    next(error);
   }
 };
 
@@ -65,6 +69,6 @@ export const deleteSeizedGood = async (req, res) => {
     await prisma.seizedGood.delete({ where: { id: parseInt(id) } });
     res.status(204).end();
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    next(error);
   }
 };
