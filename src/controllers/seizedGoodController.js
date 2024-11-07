@@ -1,12 +1,11 @@
 import prisma from "../../prisma/client.js";
+import AppError from "../utils/AppError.js";
 
 export const createSeizedGood = async (req, res, next) => {
   const { name, description, value } = req.body;
 
   if (!name || !description || !value) {
-    return res
-      .status(400)
-      .json({ message: "Name, description and value are required fields." });
+    throw new AppError("All fields are required", 403);
   }
   try {
     const seizedGood = await prisma.seizedGood.create({

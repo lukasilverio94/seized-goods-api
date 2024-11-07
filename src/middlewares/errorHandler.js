@@ -1,11 +1,14 @@
-export const errorHandler = (err, req, res, next) => {
-  console.log(err.stack);
+import AppError from "../utils/AppError.js";
 
-  const statusCode = res.statusCode === 200 ? 500 : res.statusCode;
+const errorHandler = (err, req, res, next) => {
+  // Check if the error is an instance of AppError
+  if (err instanceof AppError) {
+    return res.status(err.status || 400).json({ message: err.message });
+  }
 
-  res.status(statusCode).json({
-    message: err.message || "An unexpected error occurred",
-    // include the stack trace only in development
-    stack: process.env.NODE === "development" ? err.stack : undefined,
-  });
+  // Default to 500 for any other unhandled error
+  console.error("Unhandled Error:", err);
+  res.status(500).json({ message: "An unexpected error occurred" });
 };
+
+export { errorHandler };
