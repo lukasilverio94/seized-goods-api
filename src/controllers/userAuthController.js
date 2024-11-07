@@ -36,7 +36,7 @@ export const registerUser = async (req, res, next) => {
     // Generate tokens and store refresh token in whitelist
     const jti = randomUUID();
     const { accessToken, refreshToken } = generateTokens(user, jti);
-    await addRefreshTokenToWhiteList({ jti, refreshToken, userId: user.id });
+    // await addRefreshTokenToWhiteList({ jti, refreshToken, userId: user.id });
 
     setAuthCookies(res, accessToken, refreshToken);
 
@@ -69,7 +69,7 @@ export const loginUser = async (req, res, next) => {
     // Generate tokens and store refresh token in whitelist
     const jti = randomUUID();
     const { accessToken, refreshToken } = generateTokens(user, jti);
-    await addRefreshTokenToWhiteList({ jti, refreshToken, userId: user.id });
+    // await addRefreshTokenToWhiteList({ jti, refreshToken, userId: user.id });
 
     setAuthCookies(res, accessToken, refreshToken);
 
