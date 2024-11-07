@@ -10,7 +10,7 @@ export const addRefreshTokenToWhiteList = async ({
 
   return await prisma.refreshToken.create({
     data: {
-      id: parseInt(jti),
+      id: jti,
       hashedToken,
       userId,
     },
