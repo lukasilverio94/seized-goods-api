@@ -51,6 +51,20 @@ model User {
   role              UserRole           @default(USER) 
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
+  refreshToken      RefreshToken[]    // relation with refreshtoken model
+}
+
+model RefreshToken {
+  id                String                @id @default(uuid())
+  hashedToken       String             // Store hashed version of refresh token
+  userId            Int                // Foreign key to User model
+  revoked           Boolean            @default(false) // Tracks if token is revoked
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  user              User               @relation(fields: [userId], references: [id])
+
+  @@index([userId])
 }
 
 enum GoodStatus {

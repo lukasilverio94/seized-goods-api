@@ -3,11 +3,11 @@ import bcrypt from "bcrypt";
 import { randomUUID } from "node:crypto";
 import AppError from "../utils/AppError.js";
 import { generateTokens } from "../utils/jwt.js";
+import { addRefreshTokenToWhiteList } from "../services/refreshTokens.js";
 import { setAuthCookies, clearAuthCookies } from "../utils/setAuthCookies.js";
 
 export const registerUser = async (req, res, next) => {
   const { username, email, password, role = "USER" } = req.body;
-  console.log("register user reqbody", req.body);
 
   try {
     if (!username || !email || !password) {
@@ -36,7 +36,7 @@ export const registerUser = async (req, res, next) => {
     // Generate tokens and store refresh token in whitelist
     const jti = randomUUID();
     const { accessToken, refreshToken } = generateTokens(user, jti);
-    // await addRefreshTokenToWhiteList({ jti, refreshToken, userId: user.id });
+    await addRefreshTokenToWhiteList({ jti, refreshToken, userId: user.id });
 
     setAuthCookies(res, accessToken, refreshToken);
 
@@ -69,7 +69,7 @@ export const loginUser = async (req, res, next) => {
     // Generate tokens and store refresh token in whitelist
     const jti = randomUUID();
     const { accessToken, refreshToken } = generateTokens(user, jti);
-    // await addRefreshTokenToWhiteList({ jti, refreshToken, userId: user.id });
+    await addRefreshTokenToWhiteList({ jti, refreshToken, userId: user.id });
 
     setAuthCookies(res, accessToken, refreshToken);
 
