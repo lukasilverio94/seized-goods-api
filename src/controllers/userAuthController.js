@@ -5,13 +5,28 @@ import AppError from "../utils/AppError.js";
 import { generateTokens } from "../utils/jwt.js";
 import { addRefreshTokenToWhiteList } from "../services/refreshTokens.js";
 import { setAuthCookies, clearAuthCookies } from "../utils/setAuthCookies.js";
+import { isEmailValidate } from "../utils/isEmailValidate.js";
+import { validateUserInputs } from "../utils/validateUserInputs.js";
 
 export const registerUser = async (req, res, next) => {
   const { username, email, password, role = "USER" } = req.body;
 
   try {
+    validateUserInputs({ username, email, password });
+    if (!isEmailValidate(email)) {
+      throw new AppError("This is not a valid email. Try again!");
+    }
+
     if (!username || !email || !password) {
       throw new AppError("All fields are required", 403);
+    }
+
+    const isUsernameAlreadyRegistered = await prisma.user.findUnique({
+      where: { username: username },
+    });
+
+    if (isUsernameAlreadyRegistered) {
+      throw new AppError("Username already taken", 403);
     }
 
     const isEmailAlreadyRegistered = await prisma.user.findUnique({
@@ -19,7 +34,7 @@ export const registerUser = async (req, res, next) => {
     });
 
     if (isEmailAlreadyRegistered) {
-      throw new AppError("Email already in use", 403);
+      throw new AppError("Email already taken", 403);
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
