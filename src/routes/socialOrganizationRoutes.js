@@ -6,13 +6,14 @@ import {
   getSocialOrganizationById,
   updateSocialOrganization,
 } from "../controllers/socialOrganizationController.js";
+import authMiddleware from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
-router.post("/", createSocialOrganization);
-router.get("/", getAllSocialOrganizations);
-router.get("/:id", getSocialOrganizationById);
-router.put("/:id", updateSocialOrganization);
-router.delete("/:id", deleteSocialOrganization);
+router.post("/", authMiddleware, createSocialOrganization);
+router.get("/", authMiddleware, getAllSocialOrganizations);
+router.get("/:id", authMiddleware, getSocialOrganizationById);
+router.put("/:id", authMiddleware, updateSocialOrganization);
+router.delete("/:id", authMiddleware, deleteSocialOrganization);
 
 export default router;
