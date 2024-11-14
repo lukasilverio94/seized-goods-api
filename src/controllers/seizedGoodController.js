@@ -44,10 +44,14 @@ export const createSeizedGood = async (req, res, next) => {
   }
 };
 
-export const getAllSeizedGoods = async (req, res) => {
+export const getAllSeizedGoods = async (req, res, next) => {
   try {
-    const seizedGoods = await prisma.seizedGood.findMany();
-    res.status(201).json(seizedGoods);
+    const seizedGoods = await prisma.seizedGood.findMany({
+      include: {
+        images: true,
+      },
+    });
+    res.status(200).json(seizedGoods);
   } catch (error) {
     next(error);
   }
@@ -58,6 +62,9 @@ export const getSeizedGoodById = async (req, res) => {
   try {
     const seizedGood = await prisma.seizedGood.findUnique({
       where: { id: parseInt(id) },
+      include: {
+        images: true,
+      },
     });
 
     if (!seizedGood) {
@@ -76,6 +83,9 @@ export const updateSeizedGood = async (req, res) => {
   try {
     const updatedSeizedGood = await prisma.seizedGood.update({
       where: { id: parseInt(id) },
+      include: {
+        images: true,
+      },
       data: { name, description, value },
     });
     res.status(201).json(updatedSeizedGood);
