@@ -7,6 +7,7 @@ import { configDotenv } from "dotenv";
 import { errorHandler } from "./middlewares/errorHandler.js";
 import { logger } from "./middlewares/logEvents.js";
 import { cloudinaryConfig } from "./config/cloudinary.js";
+import cors from "cors";
 
 configDotenv();
 cloudinaryConfig();
@@ -14,6 +15,15 @@ cloudinaryConfig();
 const app = express();
 
 app.use(express.json());
+app.use(
+  cors({
+    origin: ["http://localhost:5173"],
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    allowedHeaders: ["Authorization,Content-Type"],
+    credentials: true,
+  })
+);
+
 //Logger
 app.use(logger);
 
@@ -21,6 +31,7 @@ app.use("/api/v1/seized-goods", seizedGoodsRoutes);
 app.use("/api/v1/social-organizations", socialOrganizationRoutes);
 app.use("/api/v1/users", userAuthRoutes);
 // app.use("/api/allocations", allocationRoutes);
+app.use("/uploads", express.static("public/uploads"));
 
 // middlewares
 app.use(errorHandler);
