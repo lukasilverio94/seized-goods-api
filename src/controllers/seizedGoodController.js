@@ -1,5 +1,6 @@
 import prisma from "../../prisma/client.js";
 import AppError from "../utils/AppError.js";
+import { uploadImagesToCloudinary } from "../utils/uploadToCloudinary.js";
 
 export const createSeizedGood = async (req, res, next) => {
   const { name, description, value } = req.body;
@@ -7,14 +8,35 @@ export const createSeizedGood = async (req, res, next) => {
   if (!name || !description || !value) {
     throw new AppError("All fields are required", 403);
   }
+
   try {
+    const parsedValue = parseFloat(value);
+    if (isNaN(parsedValue)) {
+      throw new AppError(
+        "Invalid value for 'value' field; must be a number",
+        400
+      );
+    }
+
     const seizedGood = await prisma.seizedGood.create({
-      data: {
-        name,
-        description,
-        value,
-      },
+      data: { name, description, value: parsedValue },
     });
+
+    if (req.files && req.files.length > 0) {
+      const imageUrls = await uploadImagesToCloudinary(req.files);
+
+      const imageSavePromises = imageUrls.map((url) =>
+        prisma.image.create({
+          data: {
+            url,
+            altText: "Seized Good Image",
+            seizedGoodId: seizedGood.id,
+          },
+        })
+      );
+
+      await Promise.all(imageSavePromises);
+    }
 
     res.status(201).json(seizedGood);
   } catch (error) {

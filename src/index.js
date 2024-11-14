@@ -6,8 +6,10 @@ import userAuthRoutes from "./routes/userAuthRoutes.js";
 import { configDotenv } from "dotenv";
 import { errorHandler } from "./middlewares/errorHandler.js";
 import { logger } from "./middlewares/logEvents.js";
+import { cloudinaryConfig } from "./config/cloudinary.js";
 
 configDotenv();
+cloudinaryConfig();
 
 const app = express();
 

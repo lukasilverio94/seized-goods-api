@@ -6,10 +6,11 @@ import {
   updateSeizedGood,
   deleteSeizedGood,
 } from "../controllers/seizedGoodController.js";
+import uploadFiles from "../middlewares/uploadFilesMulter.js";
 
 const router = express.Router();
 
-router.post("/", createSeizedGood);
+router.post("/", uploadFiles.array("files", 5), createSeizedGood);
 router.get("/", getAllSeizedGoods);
 router.get("/:id", getSeizedGoodById);
 router.put("/:id", updateSeizedGood);
