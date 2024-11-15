@@ -24,7 +24,11 @@ export const createSeizedGood = async (req, res, next) => {
 
 export const getAllSeizedGoods = async (req, res) => {
   try {
-    const seizedGoods = await prisma.seizedGood.findMany();
+    const seizedGoods = await prisma.seizedGood.findMany({
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
     res.status(201).json(seizedGoods);
   } catch (error) {
     next(error);
