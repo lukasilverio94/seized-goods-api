@@ -52,6 +52,11 @@ export const getAllSeizedGoods = async (req, res, next) => {
       },
     });
     res.status(200).json(seizedGoods);
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
+    res.status(201).json(seizedGoods);
   } catch (error) {
     next(error);
   }

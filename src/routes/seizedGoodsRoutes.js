@@ -6,7 +6,10 @@ import {
   updateSeizedGood,
   deleteSeizedGood,
 } from "../controllers/seizedGoodController.js";
+
 import uploadFiles from "../middlewares/uploadFilesMulter.js";
+import authMiddleware from "../middlewares/authMiddleware.js";
+
 
 const router = express.Router();
 

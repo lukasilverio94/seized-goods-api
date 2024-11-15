@@ -8,21 +8,28 @@ import { errorHandler } from "./middlewares/errorHandler.js";
 import { logger } from "./middlewares/logEvents.js";
 import { cloudinaryConfig } from "./config/cloudinary.js";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 
 configDotenv();
 cloudinaryConfig();
 
 const app = express();
 
+// CORS option config
+const corsOptions = {
+  origin: "http://localhost:5173",
+  credentials: true,
+  optionsSuccessStatus: 200,
+  methods: ["GET", "POST", "PUT", "DELETE"],
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
-app.use(
-  cors({
-    origin: ["http://localhost:5173"],
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    allowedHeaders: ["Authorization,Content-Type"],
-    credentials: true,
-  })
-);
+
+app.use(cors(corsOptions));
+
+app.use(cookieParser());
+app.use(express.urlencoded({ extended: true }));
 
 //Logger
 app.use(logger);
