@@ -50,13 +50,11 @@ export const getAllSeizedGoods = async (req, res, next) => {
       include: {
         images: true,
       },
-    });
-    res.status(200).json(seizedGoods);
       orderBy: {
         createdAt: "desc",
       },
     });
-    res.status(201).json(seizedGoods);
+    res.status(200).json(seizedGoods);
   } catch (error) {
     next(error);
   }
