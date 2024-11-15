@@ -16,6 +16,17 @@ model SeizedGood {
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
   allocations       Allocation[]
+  images            Image[]
+}
+
+model Image {
+  id                Int                @id @default(autoincrement())
+  url               String             // it will save urls (path)
+  altText           String?            // Optional alt text for accessibility
+  seizedGoodId      Int
+  createdAt         DateTime           @default(now())
+
+  seizedGood        SeizedGood         @relation(fields: [seizedGoodId], references: [id], onDelete: Cascade)
 }
 
 model SocialOrganization {

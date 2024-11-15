@@ -6,10 +6,12 @@ import userAuthRoutes from "./routes/userAuthRoutes.js";
 import { configDotenv } from "dotenv";
 import { errorHandler } from "./middlewares/errorHandler.js";
 import { logger } from "./middlewares/logEvents.js";
+import { cloudinaryConfig } from "./config/cloudinary.js";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 
 configDotenv();
+cloudinaryConfig();
 
 const app = express();
 
@@ -18,10 +20,14 @@ const corsOptions = {
   origin: "http://localhost:5173",
   credentials: true,
   optionsSuccessStatus: 200,
+  methods: ["GET", "POST", "PUT", "DELETE"],
 };
 
 app.use(cors(corsOptions));
 app.use(express.json());
+
+app.use(cors(corsOptions));
+
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
 
@@ -32,6 +38,7 @@ app.use("/api/v1/seized-goods", seizedGoodsRoutes);
 app.use("/api/v1/social-organizations", socialOrganizationRoutes);
 app.use("/api/v1/users", userAuthRoutes);
 // app.use("/api/allocations", allocationRoutes);
+app.use("/uploads", express.static("public/uploads"));
 
 // middlewares
 app.use(errorHandler);
