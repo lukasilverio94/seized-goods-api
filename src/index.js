@@ -6,12 +6,25 @@ import userAuthRoutes from "./routes/userAuthRoutes.js";
 import { configDotenv } from "dotenv";
 import { errorHandler } from "./middlewares/errorHandler.js";
 import { logger } from "./middlewares/logEvents.js";
+import cors from "cors";
+import cookieParser from "cookie-parser";
 
 configDotenv();
 
 const app = express();
 
+// CORS option config
+const corsOptions = {
+  origin: "http://localhost:5173",
+  credentials: true,
+  optionsSuccessStatus: 200,
+};
+
+app.use(cors(corsOptions));
 app.use(express.json());
+app.use(cookieParser());
+app.use(express.urlencoded({ extended: true }));
+
 //Logger
 app.use(logger);
 
