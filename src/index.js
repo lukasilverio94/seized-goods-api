@@ -2,6 +2,7 @@ import express from "express";
 import seizedGoodsRoutes from "./routes/seizedGoodsRoutes.js";
 import socialOrganizationRoutes from "./routes/socialOrganizationRoutes.js";
 import userAuthRoutes from "./routes/userAuthRoutes.js";
+import categoryRoutes from "./routes/categoryItemRoutes.js";
 // import allocationRoutes from "./routes/allocationRoutes.js";
 import { configDotenv } from "dotenv";
 import { errorHandler } from "./middlewares/errorHandler.js";
@@ -37,6 +38,7 @@ app.use(logger);
 app.use("/api/v1/seized-goods", seizedGoodsRoutes);
 app.use("/api/v1/social-organizations", socialOrganizationRoutes);
 app.use("/api/v1/users", userAuthRoutes);
+app.use("/api/v1/categories", categoryRoutes);
 // app.use("/api/allocations", allocationRoutes);
 app.use("/uploads", express.static("public/uploads"));
 
