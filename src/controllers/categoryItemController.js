@@ -1,4 +1,5 @@
 import prisma from "../../prisma/client.js";
+import AppError from "../utils/AppError.js";
 
 export const getAllCategories = async (req, res, next) => {
   try {
