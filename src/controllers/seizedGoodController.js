@@ -3,7 +3,7 @@ import AppError from "../utils/AppError.js";
 import { uploadImagesToCloudinary } from "../utils/uploadToCloudinary.js";
 
 export const createSeizedGood = async (req, res, next) => {
-  const { name, description, value } = req.body;
+  const { name, description, value, categoryId } = req.body;
 
   if (!name || !description || !value) {
     throw new AppError("All fields are required", 403);
@@ -18,8 +18,21 @@ export const createSeizedGood = async (req, res, next) => {
       );
     }
 
+    const category = await prisma.category.findUnique({
+      where: { id: parseInt(categoryId) },
+    });
+
+    if (!category) {
+      throw new AppError("Invalid Category ID provided", 404);
+    }
+
     const seizedGood = await prisma.seizedGood.create({
-      data: { name, description, value: parsedValue },
+      data: {
+        name,
+        description,
+        value: parsedValue,
+        categoryId: parseInt(categoryId),
+      },
     });
 
     if (req.files && req.files.length > 0) {
@@ -49,6 +62,7 @@ export const getAllSeizedGoods = async (req, res, next) => {
     const seizedGoods = await prisma.seizedGood.findMany({
       include: {
         images: true,
+        category: true,
       },
       orderBy: {
         createdAt: "desc",
@@ -67,6 +81,7 @@ export const getSeizedGoodById = async (req, res) => {
       where: { id: parseInt(id) },
       include: {
         images: true,
+        category: true,
       },
     });
 
@@ -80,18 +95,38 @@ export const getSeizedGoodById = async (req, res) => {
   }
 };
 
-export const updateSeizedGood = async (req, res) => {
+export const updateSeizedGood = async (req, res, next) => {
   const { id } = req.params;
-  const { name, description, value } = req.body;
+  const { name, description, value, categoryId } = req.body;
+
   try {
+    const data = {};
+
+    if (name) data.name = name;
+    if (description) data.description = description;
+    if (value) data.value = parseFloat(value);
+
+    if (categoryId) {
+      const category = await prisma.category.findUnique({
+        where: { id: parseInt(categoryId) },
+      });
+
+      if (!category) {
+        throw new AppError("Invalid categoryId provided", 404);
+      }
+      data.categoryId = parseInt(categoryId);
+    }
+
     const updatedSeizedGood = await prisma.seizedGood.update({
       where: { id: parseInt(id) },
       include: {
         images: true,
+        category: true,
       },
-      data: { name, description, value },
+      data,
     });
-    res.status(201).json(updatedSeizedGood);
+
+    res.status(200).json(updatedSeizedGood);
   } catch (error) {
     next(error);
   }

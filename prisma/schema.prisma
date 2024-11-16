@@ -7,6 +7,8 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+
+
 model SeizedGood {
   id                Int                @id @default(autoincrement())
   name              String
@@ -17,8 +19,18 @@ model SeizedGood {
   updatedAt         DateTime           @updatedAt
   allocations       Allocation[]
   images            Image[]
+  categoryId        Int
+  category          Category           @relation(fields: [categoryId], references: [id])
 }
 
+model Category {
+  id              Int                   @id @default(autoincrement())
+  name            String                @unique
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
+  goods           SeizedGood[]
+  
+}
 model Image {
   id                Int                @id @default(autoincrement())
   url               String             // it will save urls (path)
