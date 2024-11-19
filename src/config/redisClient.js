@@ -1,16 +1,23 @@
 import { createClient } from "redis";
 
-// create redis publisher
-export const redisPublisher = createClient();
-export const redisSubscriber = createClient();
+// Single instance of Redis clients
+const redisPublisher = createClient();
+const redisSubscriber = createClient();
 
-// connect to redis
 (async () => {
   try {
     await redisPublisher.connect();
-    await redisSubscriber.connect();
-    console.log("Connected to Redis!");
+    console.log("Connected to Redis Publisher");
   } catch (error) {
-    console.log("Redis connection error:", error);
+    console.error("Redis Publisher connection error:", error);
+  }
+
+  try {
+    await redisSubscriber.connect();
+    console.log("Connected to Redis Subscriber");
+  } catch (error) {
+    console.error("Redis Subscriber connection error:", error);
   }
 })();
+
+export { redisPublisher, redisSubscriber };

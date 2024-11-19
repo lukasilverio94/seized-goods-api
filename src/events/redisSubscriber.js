@@ -1,5 +1,6 @@
 import { redisSubscriber } from "../config/redisClient.js";
 import { notifySocialOrganizations } from "./notifySocialOrganizations.js";
+import { io } from "../index.js";
 
 (async () => {
   try {
@@ -10,6 +11,7 @@ import { notifySocialOrganizations } from "./notifySocialOrganizations.js";
         const seizedGood = JSON.parse(message);
         // Notify NGOs about the new item
         await notifySocialOrganizations(seizedGood);
+        io.emit("new-seized-good", seizedGood);
       } catch (error) {
         console.log("Error handling new seized good:", error);
       }

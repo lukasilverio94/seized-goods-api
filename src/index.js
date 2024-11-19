@@ -1,4 +1,6 @@
 import express from "express";
+import { createServer } from "node:http";
+import { Server } from "socket.io";
 import seizedGoodsRoutes from "./routes/seizedGoodsRoutes.js";
 import socialOrganizationRoutes from "./routes/socialOrganizationRoutes.js";
 import userAuthRoutes from "./routes/userAuthRoutes.js";
@@ -16,6 +18,23 @@ configDotenv();
 cloudinaryConfig();
 
 const app = express();
+const server = createServer(app);
+
+// sockets
+export const io = new Server(server, {
+  cors: {
+    origin: "http://localhost:5173",
+    methods: ["GET", "POST"],
+  },
+});
+
+io.on("connection", (socket) => {
+  console.log("Client connected:", socket.id);
+
+  socket.on("disconnect", () => {
+    console.log("Client disconnected:", socket.id);
+  });
+});
 
 // CORS option config
 const corsOptions = {
@@ -27,8 +46,6 @@ const corsOptions = {
 
 app.use(cors(corsOptions));
 app.use(express.json());
-
-app.use(cors(corsOptions));
 
 app.use(cookieParser());
 app.use(express.urlencoded({ extended: true }));
@@ -47,4 +64,4 @@ app.use("/uploads", express.static("public/uploads"));
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
