@@ -19,6 +19,7 @@ export const createSeizedGood = async (req, res, next) => {
       );
     }
 
+    // Check if the category exists
     const category = await prisma.category.findUnique({
       where: { id: parseInt(categoryId) },
     });
@@ -27,6 +28,7 @@ export const createSeizedGood = async (req, res, next) => {
       throw new AppError("Invalid Category ID provided", 404);
     }
 
+    // Create the SeizedGood record without images first
     const seizedGood = await prisma.seizedGood.create({
       data: {
         name,
@@ -36,9 +38,13 @@ export const createSeizedGood = async (req, res, next) => {
       },
     });
 
+    let images = [];
+
+    // If images are provided in the request, upload them and save them in the database
     if (req.files && req.files.length > 0) {
       const imageUrls = await uploadImagesToCloudinary(req.files);
 
+      // Save image URLs to the image table
       const imageSavePromises = imageUrls.map((url) =>
         prisma.image.create({
           data: {
@@ -49,18 +55,30 @@ export const createSeizedGood = async (req, res, next) => {
         })
       );
 
-      await Promise.all(imageSavePromises);
+      // Wait for all images to be saved
+      const savedImages = await Promise.all(imageSavePromises);
+
+      // Attach saved images to the seizedGood record
+      images = savedImages.map((img) => img.url);
     }
 
-    // Publish the new item to Redis subscriber
-    await redisPublisher.publish("newSeizedGoods", JSON.stringify(seizedGood));
+    // Fetch the full SeizedGood record with associated images
+    const fullSeizedGood = await prisma.seizedGood.findUnique({
+      where: { id: seizedGood.id },
+      include: { images: true }, // Include images when fetching the full seizedGood record
+    });
 
-    res.status(201).json(seizedGood);
+    // Publish the full SeizedGood (with images) to Redis
+    await redisPublisher.publish(
+      "newSeizedGoods",
+      JSON.stringify(fullSeizedGood)
+    );
+
+    res.status(201).json(fullSeizedGood);
   } catch (error) {
     next(error);
   }
 };
-
 export const getAllSeizedGoods = async (req, res, next) => {
   try {
     const seizedGoods = await prisma.seizedGood.findMany({
