@@ -10,6 +10,7 @@ import { logger } from "./middlewares/logEvents.js";
 import { cloudinaryConfig } from "./config/cloudinary.js";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+import "./events/redisSubscriber.js";
 
 configDotenv();
 cloudinaryConfig();

@@ -1,6 +1,7 @@
 import prisma from "../../prisma/client.js";
 import AppError from "../utils/AppError.js";
 import { uploadImagesToCloudinary } from "../utils/uploadToCloudinary.js";
+import { redisPublisher } from "../config/redisClient.js";
 
 export const createSeizedGood = async (req, res, next) => {
   const { name, description, value, categoryId } = req.body;
@@ -50,6 +51,9 @@ export const createSeizedGood = async (req, res, next) => {
 
       await Promise.all(imageSavePromises);
     }
+
+    // Publish the new item to Redis subscriber
+    await redisPublisher.publish("newSeizedGoods", JSON.stringify(seizedGood));
 
     res.status(201).json(seizedGood);
   } catch (error) {
