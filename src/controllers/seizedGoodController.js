@@ -54,6 +54,7 @@ export const createSeizedGood = async (req, res, next) => {
 
     // notification payload
     const notification = {
+      type: "new",
       id: seizedGood.id,
       name: seizedGood.name,
       value: seizedGood.value,
@@ -144,11 +145,32 @@ export const updateSeizedGood = async (req, res, next) => {
   }
 };
 
-export const deleteSeizedGood = async (req, res) => {
+export const deleteSeizedGood = async (req, res, next) => {
   const { id } = req.params;
+
   try {
-    await prisma.seizedGood.delete({ where: { id: parseInt(id) } });
-    res.status(204).end();
+    const seizedGood = await prisma.seizedGood.findUnique({
+      where: { id: parseInt(id) },
+    });
+
+    if (!seizedGood) {
+      return res.status(404).json({ error: "Seized good not found" });
+    }
+
+    await prisma.seizedGood.delete({
+      where: { id: parseInt(id) },
+    });
+
+    // Notify SSE clients about the deletion
+    const message = JSON.stringify({
+      type: "delete",
+      id: seizedGood.id,
+    });
+    sseClients.forEach((client) => {
+      client.write(`data: ${message}\n\n`);
+    });
+
+    res.status(200).json({ message: "Seized good deleted successfully" });
   } catch (error) {
     next(error);
   }
