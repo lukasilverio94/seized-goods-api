@@ -10,6 +10,8 @@ import { logger } from "./middlewares/logEvents.js";
 import { cloudinaryConfig } from "./config/cloudinary.js";
 import cors from "cors";
 import cookieParser from "cookie-parser";
+// server sent events
+import sseRoutes from "./events/sseRoutes.js";
 
 configDotenv();
 cloudinaryConfig();
@@ -35,6 +37,7 @@ app.use(express.urlencoded({ extended: true }));
 //Logger
 app.use(logger);
 
+app.use("/events", sseRoutes);
 app.use("/api/v1/seized-goods", seizedGoodsRoutes);
 app.use("/api/v1/social-organizations", socialOrganizationRoutes);
 app.use("/api/v1/users", userAuthRoutes);
