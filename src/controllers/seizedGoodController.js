@@ -1,4 +1,5 @@
 import prisma from "../../prisma/client.js";
+import { broadcastToClients } from "../events/serverSentEvents.js";
 import AppError from "../utils/AppError.js";
 import { uploadImagesToCloudinary } from "../utils/uploadToCloudinary.js";
 
@@ -50,6 +51,17 @@ export const createSeizedGood = async (req, res, next) => {
 
       await Promise.all(imageSavePromises);
     }
+
+    // notification payload
+    const notification = {
+      id: seizedGood.id,
+      name: seizedGood.name,
+      value: seizedGood.value,
+      description: seizedGood.description,
+      images: seizedGood.images,
+    };
+
+    broadcastToClients(notification);
 
     res.status(201).json(seizedGood);
   } catch (error) {

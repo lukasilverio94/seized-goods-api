@@ -10,7 +10,6 @@ import {
 import uploadFiles from "../middlewares/uploadFilesMulter.js";
 import authMiddleware from "../middlewares/authMiddleware.js";
 
-
 const router = express.Router();
 
 router.post("/", uploadFiles.array("files", 5), createSeizedGood);
