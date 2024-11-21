@@ -29,6 +29,7 @@ model Category {
   createdAt       DateTime              @default(now())
   updatedAt       DateTime              @updatedAt
   goods           SeizedGood[]
+  organizations   SocialOrganizationCategory[] 
   
 }
 model Image {
@@ -52,6 +53,21 @@ model SocialOrganization {
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
   allocations       Allocation[]
+
+  categories        SocialOrganizationCategory[]
+}
+
+model SocialOrganizationCategory {
+  id                Int                @id @default(autoincrement())
+  socialOrganizationId Int
+  categoryId        Int
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  socialOrganization SocialOrganization @relation(fields: [socialOrganizationId], references: [id])
+  category          Category           @relation(fields: [categoryId], references: [id])
+
+  @@unique([socialOrganizationId, categoryId]) 
 }
 
 model Allocation {
