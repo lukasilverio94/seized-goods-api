@@ -37,15 +37,11 @@ export const createSeizedGood = async (req, res, next) => {
       description: seizedGood.description,
       category: category.name,
     };
-
-    console.log("notification obj", notification);
-    // Notify SSE clients for the corresponding category
+  
+    // Notify NGOs clients for the corresponding category by id
     broadcastToClients(notification, parseInt(categoryId));
-
-    // Optional: Log notification for debugging
-    console.log("Notification sent for category:", categoryId);
-
-    // Handle images if provided
+    
+      // Handle images if provided
     if (req.files && req.files.length > 0) {
       const imageUrls = await uploadImagesToCloudinary(req.files);
 

@@ -3,17 +3,22 @@ import { addClient } from "./serverSentEvents.js";
 
 const router = express.Router();
 
-router.get("/", (req, res) => {
-  const categories = req.query.categories
-    ? req.query.categories.split(",").map(Number)
+router.get("/", (request, response) => {
+  const headers = {
+    "Content-Type": "text/event-stream",
+    Connection: "keep-alive",
+    "Cache-Control": "no-cache",
+  };
+
+  const categories = request.query.categories
+    ? request.query.categories.split(",").map(Number)
     : [];
-  res.setHeader("Content-Type", "text/event-stream");
-  res.setHeader("Cache-Control", "no-cache");
-  res.setHeader("Connection", "keep-alive");
 
-  res.write("retry: 10000\n\n");
+  response.writeHead(200, headers);
 
-  addClient(res, categories);
+  response.write("retry: 10000\n\n");
+
+  addClient(response, categories);
 });
 
 export default router;
