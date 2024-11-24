@@ -11,13 +11,14 @@ export const createSeizedGood = async (req, res, next) => {
   }
 
   try {
-    const parsedValue = parseFloat(value);
-    if (isNaN(parsedValue)) {
-      throw new AppError(
-        "Invalid value for 'value' field; must be a number",
-        400
-      );
-    }
+    const seizedGood = await prisma.seizedGood.create({
+      data: {
+        name,
+        description,
+        value: parseFloat(value),
+        categoryId: parseInt(categoryId),
+      },
+    });
 
     const category = await prisma.category.findUnique({
       where: { id: parseInt(categoryId) },
@@ -27,15 +28,24 @@ export const createSeizedGood = async (req, res, next) => {
       throw new AppError("Invalid Category ID provided", 404);
     }
 
-    const seizedGood = await prisma.seizedGood.create({
-      data: {
-        name,
-        description,
-        value: parsedValue,
-        categoryId: parseInt(categoryId),
-      },
-    });
+    // Create notification payload
+    const notification = {
+      type: "new",
+      id: seizedGood.id,
+      name: seizedGood.name,
+      value: seizedGood.value,
+      description: seizedGood.description,
+      category: category.name,
+    };
 
+    console.log("notification obj", notification);
+    // Notify SSE clients for the corresponding category
+    broadcastToClients(notification, parseInt(categoryId));
+
+    // Optional: Log notification for debugging
+    console.log("Notification sent for category:", categoryId);
+
+    // Handle images if provided
     if (req.files && req.files.length > 0) {
       const imageUrls = await uploadImagesToCloudinary(req.files);
 
@@ -51,18 +61,6 @@ export const createSeizedGood = async (req, res, next) => {
 
       await Promise.all(imageSavePromises);
     }
-
-    // notification payload
-    const notification = {
-      type: "new",
-      id: seizedGood.id,
-      name: seizedGood.name,
-      value: seizedGood.value,
-      description: seizedGood.description,
-      images: seizedGood.images,
-    };
-
-    broadcastToClients(notification);
 
     res.status(201).json(seizedGood);
   } catch (error) {
