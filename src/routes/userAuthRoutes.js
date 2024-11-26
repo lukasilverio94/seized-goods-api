@@ -1,16 +1,18 @@
 import express from "express";
 import {
   registerUser,
-  verifyOptUser,
+  verifyOtpUser,
   loginUser,
   logoutUser,
+  resendOtpCode,
 } from "../controllers/userAuthController.js";
 import authMiddleware from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
 router.post("/register", registerUser);
-router.post("/verify-code", verifyOptUser);
+router.post("/verify-otp", verifyOtpUser);
+router.post("/resend-otp", resendOtpCode);
 router.post("/login", loginUser);
 router.get("/me", authMiddleware, (req, res) => {
   res.status(200).json({
