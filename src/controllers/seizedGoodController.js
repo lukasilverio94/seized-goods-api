@@ -1,32 +1,35 @@
 import prisma from "../../prisma/client.js";
 import { broadcastToClients } from "../events/serverSentEvents.js";
-import AppError from "../utils/AppError.js";
-import { uploadImagesToCloudinary } from "../utils/uploadToCloudinary.js";
+import { createSeizedGoodService } from "../services/CreateSeizedGoodService.js";
+import { getAllSeizedGoodsService } from "../services/GetAllSeizedGoodsService.js";
+import { getSeizedGoodByIdService } from "../services/GetSeizedGoodByIdService.js";
+import { updateSeizedGoodService } from "../services/UpdateSeizedGoodService.js";
+import { deleteSeizedGoodService } from "../services/DeleteSeizedGoodService.js";
 
 export const createSeizedGood = async (req, res, next) => {
   const { name, description, value, categoryId } = req.body;
 
-  if (!name || !description || !value) {
-    throw new AppError("All fields are required", 403);
-  }
-
   try {
-    const seizedGood = await prisma.seizedGood.create({
-      data: {
-        name,
-        description,
-        value: parseFloat(value),
-        categoryId: parseInt(categoryId),
-      },
-    });
-
-    const category = await prisma.category.findUnique({
-      where: { id: parseInt(categoryId) },
-    });
-
-    if (!category) {
-      throw new AppError("Invalid Category ID provided", 404);
+    if (!name || !description || !value || !categoryId) {
+      return res.status(400).json({ error: "All fields are required" });
     }
+
+    if (name.length < 3) {
+      return res
+        .status(400)
+        .json({ error: "Name must be at least 3 characters long" });
+    }
+
+    if (description.length < 10) {
+      return res
+        .status(400)
+        .json({ error: "Description must be at least 10 characters long" });
+    }
+
+    const { seizedGood, category } = await createSeizedGoodService(
+      { name, description, value, categoryId },
+      req.files
+    );
 
     // Create notification payload
     const notification = {
@@ -37,66 +40,31 @@ export const createSeizedGood = async (req, res, next) => {
       description: seizedGood.description,
       category: category.name,
     };
-  
+
     // Notify NGOs clients for the corresponding category by id
     broadcastToClients(notification, parseInt(categoryId));
-    
-      // Handle images if provided
-    if (req.files && req.files.length > 0) {
-      const imageUrls = await uploadImagesToCloudinary(req.files);
-
-      const imageSavePromises = imageUrls.map((url) =>
-        prisma.image.create({
-          data: {
-            url,
-            altText: "Seized Good Image",
-            seizedGoodId: seizedGood.id,
-          },
-        })
-      );
-
-      await Promise.all(imageSavePromises);
-    }
 
     res.status(201).json(seizedGood);
   } catch (error) {
+    res.status(500).json({ message: "Something went wrong" });
     next(error);
   }
 };
 
 export const getAllSeizedGoods = async (req, res, next) => {
   try {
-    const seizedGoods = await prisma.seizedGood.findMany({
-      include: {
-        images: true,
-        category: true,
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-    });
+    const seizedGoods = await getAllSeizedGoodsService();
     res.status(200).json(seizedGoods);
   } catch (error) {
     next(error);
   }
 };
 
-export const getSeizedGoodById = async (req, res) => {
+export const getSeizedGoodById = async (req, res, next) => {
   const { id } = req.params;
   try {
-    const seizedGood = await prisma.seizedGood.findUnique({
-      where: { id: parseInt(id) },
-      include: {
-        images: true,
-        category: true,
-      },
-    });
-
-    if (!seizedGood) {
-      return res.status(404).json({ error: "Seized Good not found!" });
-    }
-
-    res.json(seizedGood);
+    const seizedGood = await getSeizedGoodByIdService(id);
+    res.status(200).json(seizedGood);
   } catch (error) {
     next(error);
   }
@@ -107,30 +75,11 @@ export const updateSeizedGood = async (req, res, next) => {
   const { name, description, value, categoryId } = req.body;
 
   try {
-    const data = {};
-
-    if (name) data.name = name;
-    if (description) data.description = description;
-    if (value) data.value = parseFloat(value);
-
-    if (categoryId) {
-      const category = await prisma.category.findUnique({
-        where: { id: parseInt(categoryId) },
-      });
-
-      if (!category) {
-        throw new AppError("Invalid categoryId provided", 404);
-      }
-      data.categoryId = parseInt(categoryId);
-    }
-
-    const updatedSeizedGood = await prisma.seizedGood.update({
-      where: { id: parseInt(id) },
-      include: {
-        images: true,
-        category: true,
-      },
-      data,
+    const updatedSeizedGood = await updateSeizedGoodService(id, {
+      name,
+      description,
+      value,
+      categoryId,
     });
 
     res.status(200).json(updatedSeizedGood);
@@ -143,17 +92,7 @@ export const deleteSeizedGood = async (req, res, next) => {
   const { id } = req.params;
 
   try {
-    const seizedGood = await prisma.seizedGood.findUnique({
-      where: { id: parseInt(id) },
-    });
-
-    if (!seizedGood) {
-      return res.status(404).json({ error: "Seized good not found" });
-    }
-
-    await prisma.seizedGood.delete({
-      where: { id: parseInt(id) },
-    });
+    await deleteSeizedGoodService(id);
 
     // Notify SSE clients about the deletion
     const message = JSON.stringify({
