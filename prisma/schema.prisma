@@ -64,7 +64,7 @@ model SocialOrganizationCategory {
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
 
-  socialOrganization SocialOrganization @relation(fields: [socialOrganizationId], references: [id])
+  socialOrganization SocialOrganization @relation(fields: [socialOrganizationId], references: [id], onDelete: Cascade)
   category          Category           @relation(fields: [categoryId], references: [id])
 
   @@unique([socialOrganizationId, categoryId]) 
