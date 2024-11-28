@@ -40,7 +40,6 @@ export const createSeizedGood = async (req, res, next) => {
       description: seizedGood.description,
       category: category.name,
     };
-
     // Notify NGOs clients for the corresponding category by id
     broadcastToClients(notification, parseInt(categoryId));
 
