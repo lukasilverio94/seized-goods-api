@@ -14,8 +14,8 @@ model User {
   email             String             @unique
   password          String
   role              UserRole           @default(USER)
-  organizationId    Int           
-  organization      SocialOrganization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  organizationId    Int?               
+  organization      SocialOrganization? @relation(fields: [organizationId], references: [id], onDelete: Cascade) // Optional relation
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
   refreshToken      RefreshToken[]
@@ -29,18 +29,16 @@ model SocialOrganization {
   phone             String
   address           String
   qualifications    String
-  //registrationNumber String           // Unique registration identifier (e.g., Chamber of Commerce)
-  //proofOfEligibility String           // Path to uploaded proof document
-  status            OrgStatus        @default(PENDING) // Approval status
-  createdAt         DateTime         @default(now())
-  updatedAt         DateTime         @updatedAt
+  status            OrgStatus          @default(PENDING) // Approval status
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
   categories        SocialOrganizationCategory[] // Categories of interest
-  allocations       Allocation[]    // Allocations received
-  requests          Request[]       // Item requests made by this organization
-  feedbacks         Feedback[]      // Feedback provided by the organization
-  users             User[]
-}
+  allocations       Allocation[]       // Allocations received
+  requests          Request[]          // Item requests made by this organization
+  feedbacks         Feedback[]         // Feedback provided by the organization
+  users             User[]             
 
+}
 model SocialOrganizationCategory {
   id                Int                @id @default(autoincrement())
   socialOrganizationId Int

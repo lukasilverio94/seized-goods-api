@@ -4,7 +4,7 @@ import AppError from "../utils/AppError.js";
 import { uploadImagesToCloudinary } from "../utils/uploadToCloudinary.js";
 
 export const createSeizedGood = async (req, res, next) => {
-  const { name, description, value, categoryId } = req.body;
+  const { name, description, value, quantity, categoryId } = req.body;
 
   if (!name || !description || !value) {
     throw new AppError("All fields are required", 403);
@@ -15,6 +15,7 @@ export const createSeizedGood = async (req, res, next) => {
       data: {
         name,
         description,
+        quantity,
         value: parseFloat(value),
         categoryId: parseInt(categoryId),
       },
@@ -34,14 +35,15 @@ export const createSeizedGood = async (req, res, next) => {
       id: seizedGood.id,
       name: seizedGood.name,
       value: seizedGood.value,
+      quantity: seizedGood.quantity,
       description: seizedGood.description,
       category: category.name,
     };
-  
+
     // Notify NGOs clients for the corresponding category by id
     broadcastToClients(notification, parseInt(categoryId));
-    
-      // Handle images if provided
+
+    // Handle images if provided
     if (req.files && req.files.length > 0) {
       const imageUrls = await uploadImagesToCloudinary(req.files);
 
@@ -104,13 +106,14 @@ export const getSeizedGoodById = async (req, res) => {
 
 export const updateSeizedGood = async (req, res, next) => {
   const { id } = req.params;
-  const { name, description, value, categoryId } = req.body;
+  const { name, description, value, quantity, categoryId } = req.body;
 
   try {
     const data = {};
 
     if (name) data.name = name;
     if (description) data.description = description;
+    if (quantity) data.quantity = quantity;
     if (value) data.value = parseFloat(value);
 
     if (categoryId) {
