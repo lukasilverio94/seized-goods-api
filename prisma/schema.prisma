@@ -7,6 +7,54 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+
+model User {
+  id                String             @id @default(uuid())
+  username          String             @unique
+  email             String             @unique
+  password          String
+  role              UserRole           @default(USER)
+  organizationId    Int           
+  organization      SocialOrganization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+  refreshToken      RefreshToken[]
+}
+
+model SocialOrganization {
+  id                Int                @id @default(autoincrement())
+  name              String
+  contactPerson     String
+  email             String
+  phone             String
+  address           String
+  qualifications    String
+  //registrationNumber String           // Unique registration identifier (e.g., Chamber of Commerce)
+  //proofOfEligibility String           // Path to uploaded proof document
+  status            OrgStatus        @default(PENDING) // Approval status
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  categories        SocialOrganizationCategory[] // Categories of interest
+  allocations       Allocation[]    // Allocations received
+  requests          Request[]       // Item requests made by this organization
+  feedbacks         Feedback[]      // Feedback provided by the organization
+  users             User[]
+}
+
+model SocialOrganizationCategory {
+  id                Int                @id @default(autoincrement())
+  socialOrganizationId Int
+  categoryId        Int
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  socialOrganization SocialOrganization @relation(fields: [socialOrganizationId], references: [id], onDelete: Cascade)
+  category          Category           @relation(fields: [categoryId], references: [id])
+
+  @@unique([socialOrganizationId, categoryId]) // Ensure one-to-one relation per category
+}
+
+
 model SeizedGood {
   id          Int        @id @default(autoincrement())
   name        String
@@ -43,37 +91,6 @@ model Category {
   organizations   SocialOrganizationCategory[] // Organizations interested in this category
 }
 
-model SocialOrganization {
-  id                Int                @id @default(autoincrement())
-  name              String
-  contactPerson     String
-  email             String
-  phone             String
-  address           String
-  qualifications    String
-  //registrationNumber String           // Unique registration identifier (e.g., Chamber of Commerce)
-  //proofOfEligibility String           // Path to uploaded proof document
-  status            OrgStatus        @default(PENDING) // Approval status
-  createdAt         DateTime         @default(now())
-  updatedAt         DateTime         @updatedAt
-  categories        SocialOrganizationCategory[] // Categories of interest
-  allocations       Allocation[]    // Allocations received
-  requests          Request[]       // Item requests made by this organization
-  feedbacks         Feedback[]      // Feedback provided by the organization
-}
-
-model SocialOrganizationCategory {
-  id                Int                @id @default(autoincrement())
-  socialOrganizationId Int
-  categoryId        Int
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
-
-  socialOrganization SocialOrganization @relation(fields: [socialOrganizationId], references: [id], onDelete: Cascade)
-  category          Category           @relation(fields: [categoryId], references: [id])
-
-  @@unique([socialOrganizationId, categoryId]) // Ensure one-to-one relation per category
-}
 
 model Request {
   id                Int                @id @default(autoincrement())
@@ -115,16 +132,6 @@ model Allocation {
   socialOrganization SocialOrganization @relation(fields: [organizationId], references: [id])
 }
 
-model User {
-  id                String             @id @default(uuid())
-  username          String             @unique
-  email             String             @unique
-  password          String
-  role              UserRole           @default(USER)
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
-  refreshToken      RefreshToken[]
-}
 
 model RefreshToken {
   id                String             @id @default(uuid())
