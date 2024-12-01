@@ -7,39 +7,40 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-
-
 model SeizedGood {
-  id                Int                @id @default(autoincrement())
-  name              String
-  description       String
-  value             Float
-  status            GoodStatus         @default(PENDING)
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
-  allocations       Allocation[]
-  images            Image[]
-  categoryId        Int
-  category          Category           @relation(fields: [categoryId], references: [id])
+  id          Int        @id @default(autoincrement())
+  name        String
+  description String
+  value       Float
+  quantity    Int        @default(1)
+  status      GoodStatus @default(PENDING)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+  images      Image[]
+  categoryId  Int
+  category    Category   @relation(fields: [categoryId], references: [id])
+  allocations Allocation[]
+  requests    Request[]  // Requests tied to this seized good
+  feedbacks   Feedback[] // Feedback on the good's usage
+}
+
+model Image {
+  id          Int      @id @default(autoincrement())
+  url         String   // File path or URL to the image
+  altText     String?  // Optional description for accessibility
+  seizedGoodId Int
+  createdAt   DateTime @default(now())
+
+  seizedGood SeizedGood @relation(fields: [seizedGoodId], references: [id], onDelete: Cascade)
 }
 
 model Category {
-  id              Int                   @id @default(autoincrement())
-  name            String                @unique
-  createdAt       DateTime              @default(now())
-  updatedAt       DateTime              @updatedAt
-  goods           SeizedGood[]
-  organizations   SocialOrganizationCategory[] 
-  
-}
-model Image {
-  id                Int                @id @default(autoincrement())
-  url               String             // it will save urls (path)
-  altText           String?            // Optional alt text for accessibility
-  seizedGoodId      Int
-  createdAt         DateTime           @default(now())
-
-  seizedGood        SeizedGood         @relation(fields: [seizedGoodId], references: [id], onDelete: Cascade)
+  id              Int                          @id @default(autoincrement())
+  name            String                       @unique
+  createdAt       DateTime                     @default(now())
+  updatedAt       DateTime                     @updatedAt
+  goods           SeizedGood[]                // Goods in this category
+  organizations   SocialOrganizationCategory[] // Organizations interested in this category
 }
 
 model SocialOrganization {
@@ -49,12 +50,16 @@ model SocialOrganization {
   email             String
   phone             String
   address           String
-  qualifications    String              // criteria or qualifications for receiving goods
-  createdAt         DateTime           @default(now())
-  updatedAt         DateTime           @updatedAt
-  allocations       Allocation[]
-
-  categories        SocialOrganizationCategory[]
+  qualifications    String
+  //registrationNumber String           // Unique registration identifier (e.g., Chamber of Commerce)
+  //proofOfEligibility String           // Path to uploaded proof document
+  status            OrgStatus        @default(PENDING) // Approval status
+  createdAt         DateTime         @default(now())
+  updatedAt         DateTime         @updatedAt
+  categories        SocialOrganizationCategory[] // Categories of interest
+  allocations       Allocation[]    // Allocations received
+  requests          Request[]       // Item requests made by this organization
+  feedbacks         Feedback[]      // Feedback provided by the organization
 }
 
 model SocialOrganizationCategory {
@@ -64,10 +69,38 @@ model SocialOrganizationCategory {
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
 
-  socialOrganization SocialOrganization @relation(fields: [socialOrganizationId], references: [id])
+  socialOrganization SocialOrganization @relation(fields: [socialOrganizationId], references: [id], onDelete: Cascade)
   category          Category           @relation(fields: [categoryId], references: [id])
 
-  @@unique([socialOrganizationId, categoryId]) 
+  @@unique([socialOrganizationId, categoryId]) // Ensure one-to-one relation per category
+}
+
+model Request {
+  id                Int                @id @default(autoincrement())
+  organizationId    Int
+  seizedGoodId      Int
+  purpose           String             // Why the org needs this good
+  impactEstimate    String?            // Expected social or environmental impact
+  status            RequestStatus      @default(PENDING) // Request lifecycle
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  organization      SocialOrganization @relation(fields: [organizationId], references: [id])
+  seizedGood        SeizedGood         @relation(fields: [seizedGoodId], references: [id])
+}
+
+model Feedback {
+  id                Int                @id @default(autoincrement())
+  organizationId    Int
+  seizedGoodId      Int
+  testimonial       String?            // Testimonials or success stories
+  photos            String[]           // Paths to uploaded photos
+  impactStats       String?            // Usage or social impact stats
+  createdAt         DateTime           @default(now())
+  updatedAt         DateTime           @updatedAt
+
+  organization      SocialOrganization @relation(fields: [organizationId], references: [id])
+  seizedGood        SeizedGood         @relation(fields: [seizedGoodId], references: [id])
 }
 
 model Allocation {
@@ -75,29 +108,29 @@ model Allocation {
   seizedGoodId      Int
   organizationId    Int
   allocatedAt       DateTime           @default(now())
-  purpose           String              // purpose of allocation
+  purpose           String             // description of the purpose for the items applied
   createdAt         DateTime           @default(now())
-  
+
   seizedGood        SeizedGood         @relation(fields: [seizedGoodId], references: [id])
   socialOrganization SocialOrganization @relation(fields: [organizationId], references: [id])
 }
 
 model User {
-  id                String                @id @default(uuid())
-  username          String              @unique
-  email             String              @unique
-  password          String             
-  role              UserRole           @default(USER) 
+  id                String             @id @default(uuid())
+  username          String             @unique
+  email             String             @unique
+  password          String
+  role              UserRole           @default(USER)
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
-  refreshToken      RefreshToken[]    
+  refreshToken      RefreshToken[]
 }
 
 model RefreshToken {
-  id                String                @id @default(uuid())
-  hashedToken       String             
-  userId            String               
-  revoked           Boolean            @default(false) 
+  id                String             @id @default(uuid())
+  hashedToken       String
+  userId            String
+  revoked           Boolean            @default(false)
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
 
@@ -109,10 +142,23 @@ model RefreshToken {
 enum GoodStatus {
   PENDING
   ALLOCATED
+  RECEIVED
   DESTROYED
 }
 
+enum OrgStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum RequestStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
 enum UserRole {
-  ADMIN
-  USER
+  USER 
+  ADMIN 
 }
