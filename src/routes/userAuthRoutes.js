@@ -1,14 +1,9 @@
 import express from "express";
-import {
-  registerUser,
-  loginUser,
-  logoutUser,
-} from "../controllers/userAuthController.js";
+import { loginUser, logoutUser } from "../controllers/authController.js";
 import authMiddleware from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
-router.post("/register", registerUser);
 router.post("/login", loginUser);
 router.get("/me", authMiddleware, (req, res) => {
   res.status(200).json({
