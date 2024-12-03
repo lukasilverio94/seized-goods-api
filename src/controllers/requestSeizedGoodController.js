@@ -5,7 +5,7 @@ export const requestSeizedGoodItem = async (req, res, next) => {
   const { seizedGoodId, purpose, impactEstimate } = req.body;
 
   try {
-    const { userId, organizationId } = req.user;
+    const { organizationId } = req.user;
 
     if (!organizationId) {
       throw new AppError(
