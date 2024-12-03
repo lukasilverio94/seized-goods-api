@@ -16,6 +16,14 @@ export const loginUser = async (req, res, next) => {
 
     const user = await prisma.user.findUnique({
       where: { email },
+      select: {
+        id: true,
+        username: true,
+        email: true,
+        password: true,
+        role: true,
+        organizationId: true,
+      },
     });
     if (!user) {
       throw new AppError("Invalid credentials", 401);
@@ -28,7 +36,16 @@ export const loginUser = async (req, res, next) => {
 
     // Generate tokens and store refresh token in whitelist
     const jti = randomUUID();
-    const { accessToken, refreshToken } = generateTokens(user, jti);
+    const { accessToken, refreshToken } = generateTokens(
+      {
+        id: user.id,
+        username: user.username,
+        email: user.email,
+        organizationId: user.organizationId,
+        role: user.role,
+      },
+      jti
+    );
     await addRefreshTokenToWhiteList({ jti, refreshToken, userId: user.id });
 
     setAuthCookies(res, accessToken, refreshToken);
