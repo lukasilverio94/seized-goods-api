@@ -12,7 +12,12 @@ import authMiddleware from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
-router.post("/", uploadFiles.array("files", 5), createSeizedGood);
+router.post(
+  "/",
+  authMiddleware,
+  uploadFiles.array("files", 5),
+  createSeizedGood
+);
 router.get("/", getAllSeizedGoods);
 router.get("/:id", getSeizedGoodById);
 router.put("/:id", updateSeizedGood);

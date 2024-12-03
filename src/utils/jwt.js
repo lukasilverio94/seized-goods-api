@@ -8,13 +8,17 @@ export const generateAccessToken = (user, jti) => {
   if (!secret) {
     throw new Error("JWT secret is not defined");
   }
-  return jwt.sign(
-    { id: user._id, username: user.username, email: user.email },
-    secret,
-    {
-      expiresIn: "15m",
-    }
-  );
+
+  const payload = {
+    id: user._id,
+    username: user.username,
+    email: user.email,
+    organizationId: user.organizationId,
+  };
+
+  return jwt.sign(payload, secret, {
+    expiresIn: "15m",
+  });
 };
 
 export const generateRefreshToken = (user, jti) => {
