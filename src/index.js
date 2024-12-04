@@ -44,7 +44,7 @@ app.use("/api/v1/social-organizations", socialOrganizationRoutes);
 app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/auth", userAuthRoutes);
 app.use("/api/v1/categories", categoryRoutes);
-app.use("/api/v1/request", requestSeizedGoodRoutes);
+app.use("/api/v1/goods-requests", requestSeizedGoodRoutes);
 // app.use("/api/allocations", allocationRoutes);
 app.use("/uploads", express.static("public/uploads"));
 
