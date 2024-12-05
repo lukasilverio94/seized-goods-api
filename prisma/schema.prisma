@@ -29,7 +29,7 @@ model SocialOrganization {
   phone             String
   address           String
   qualifications    String
-  status            OrgStatus          @default(PENDING) // Approval status
+  status            OrgStatus          @default(APPROVED) // Approval status
   createdAt         DateTime           @default(now())
   updatedAt         DateTime           @updatedAt
   categories        SocialOrganizationCategory[] // Categories of interest
