@@ -16,7 +16,6 @@ export const generateAccessToken = (user, jti) => {
     organizationId: user.organizationId,
   };
 
-  console.log("User object before token generation:", user);
   return jwt.sign(payload, secret, {
     expiresIn: "1h",
   });
