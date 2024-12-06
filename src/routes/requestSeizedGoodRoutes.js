@@ -6,6 +6,7 @@ import {
   getGoodRequestById,
   updateRequestGood,
   deleteGoodRequestById,
+  approveRequest,
 } from "../controllers/requestSeizedGoodController.js";
 import authMiddleware from "../middlewares/authMiddleware.js";
 
@@ -14,5 +15,6 @@ router.get("/", getAllGoodsRequests);
 router.get("/:id", getGoodRequestById);
 router.put("/:id", updateRequestGood);
 router.delete("/:id", deleteGoodRequestById);
+router.patch("/:id/approve", approveRequest);
 
 export default router;

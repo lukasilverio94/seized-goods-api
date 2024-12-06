@@ -10,13 +10,15 @@ export async function seedSeizedGoods() {
   for (let i = 0; i < 100; i++) {
     const randomCategoryId = Math.floor(Math.random() * 6) + 1;
     const quantity = Math.floor(Math.random() * 100) + 1;
-    const value = (Math.random() * 10000).toFixed(2);
+    const availableQuantity = quantity;
+    const value = (Math.random() * 100).toFixed(2);
 
     seizedGoods.push({
       name: `Seized Good ${i + 1}`,
       description: `Description for seized good ${i + 1}`,
       value: parseFloat(value),
       quantity,
+      availableQuantity,
       categoryId: randomCategoryId,
     });
   }

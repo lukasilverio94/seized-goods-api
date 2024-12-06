@@ -59,6 +59,7 @@ model SeizedGood {
   description String
   value       Float
   quantity    Int        @default(1)
+  availableQuantity Int  @default(0) // inventory control
   status      GoodStatus @default(PENDING)
   createdAt   DateTime   @default(now())
   updatedAt   DateTime   @updatedAt
@@ -94,6 +95,7 @@ model Request {
   id                Int                @id @default(autoincrement())
   organizationId    Int
   seizedGoodId      Int
+  quantity          Int
   purpose           String             // Why the org needs this good
   impactEstimate    String?            // Expected social or environmental impact
   status            RequestStatus      @default(PENDING) // Request lifecycle
