@@ -6,7 +6,7 @@
   "scripts": {
     "start": "node --watch src/index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "seed": "node prisma/seed.js"
+    "seed": "node prisma/seeds/index.js"
   },
   "keywords": [],
   "author": "",
