@@ -68,7 +68,16 @@ export const createSeizedGood = async (req, res, next) => {
 
 export const getAllSeizedGoods = async (req, res, next) => {
   try {
+    const { categoryId } = req.query;
+
+    const filters = {};
+
+    if (categoryId) {
+      filters.categoryId = parseInt(categoryId, 10);
+    }
+
     const seizedGoods = await prisma.seizedGood.findMany({
+      where: filters,
       include: {
         images: true,
         category: true,
@@ -77,6 +86,7 @@ export const getAllSeizedGoods = async (req, res, next) => {
         createdAt: "desc",
       },
     });
+
     res.status(200).json(seizedGoods);
   } catch (error) {
     next(error);
