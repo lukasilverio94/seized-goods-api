@@ -16,6 +16,7 @@ export const createSeizedGood = async (req, res, next) => {
         name,
         description,
         quantity,
+        availableQuantity: quantity,
         value: parseFloat(value),
         categoryId: parseInt(categoryId),
       },
@@ -35,7 +36,7 @@ export const createSeizedGood = async (req, res, next) => {
       id: seizedGood.id,
       name: seizedGood.name,
       value: seizedGood.value,
-      quantity: seizedGood.quantity,
+      quantity: seizedGood.availableQuantity,
       description: seizedGood.description,
       category: category.name,
     };
