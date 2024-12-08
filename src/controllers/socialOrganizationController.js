@@ -1,10 +1,6 @@
 import prisma from "../../prisma/client.js";
-import { addRefreshTokenToWhiteList } from "../services/refreshTokens.js";
 import AppError from "../utils/AppError.js";
 import bcrypt from "bcrypt";
-import { randomUUID } from "node:crypto";
-import { setAuthCookies } from "../utils/setAuthCookies.js";
-import { generateTokens } from "../utils/jwt.js";
 
 export const createSocialOrganizationWithUser = async (req, res, next) => {
   const {
@@ -82,28 +78,13 @@ export const createSocialOrganizationWithUser = async (req, res, next) => {
       return { organization, user };
     });
 
-    // Generate Tokens
-    const jti = randomUUID();
-    const { accessToken, refreshToken } = generateTokens(
-      newOrganization.user,
-      jti
-    );
-
-    // Store refresh token in whitelist
-    await addRefreshTokenToWhiteList({
-      jti,
-      refreshToken,
-      userId: newOrganization.user.id,
-    });
-
-    // Set Auth Cookies (optional)
-    setAuthCookies(res, accessToken, refreshToken);
-
     res.status(201).json({
-      message: "Social organization and user registered successfully",
+      message: "Registration successful. Your account is pending approval.",
       organization: newOrganization.organization,
-      accessToken,
-      refreshToken,
+      user: {
+        email: newOrganization.user.email,
+        role: newOrganization.user.role,
+      },
     });
   } catch (error) {
     next(error);
