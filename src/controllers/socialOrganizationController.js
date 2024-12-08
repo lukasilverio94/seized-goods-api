@@ -52,7 +52,16 @@ export const createSocialOrganizationWithUser = async (req, res, next) => {
             })),
           },
         },
-        include: { categories: true },
+        include: {
+          categories: {
+            select: {
+              id: true,
+              categoryId: true,
+              createdAt: true,
+              updatedAt: true,
+            },
+          },
+        },
       });
 
       const user = await prisma.user.create({
@@ -70,12 +79,9 @@ export const createSocialOrganizationWithUser = async (req, res, next) => {
     });
 
     res.status(201).json({
-      message: "Social organization and user registered successfully",
+      message: "Registration successful. Your account is pending approval.",
       organization: newOrganization.organization,
       user: {
-        id: newOrganization.user.id,
-        firstName: newOrganization.user.firstName,
-        lastName: newOrganization.user.lastName,
         email: newOrganization.user.email,
         role: newOrganization.user.role,
       },
