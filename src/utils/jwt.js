@@ -11,7 +11,8 @@ export const generateAccessToken = (user, jti) => {
 
   const payload = {
     userId: user.id,
-    username: user.username,
+    firstName: user.firstName,
+    lastName: user.lastName,
     email: user.email,
     organizationId: user.organizationId,
   };

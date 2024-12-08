@@ -9,30 +9,30 @@ import { isEmailValidate } from "../utils/isEmailValidate.js";
 import { validateUserInputs } from "../utils/validateUserInputs.js";
 
 export const registerUser = async (req, res, next) => {
-  const { username, email, password, role = "USER", organizationId } = req.body;
+  const {
+    firstName,
+    lastName,
+    email,
+    password,
+    role = "USER",
+    organizationId,
+  } = req.body;
 
   try {
-    // Validate user input
-    validateUserInputs({ username, email, password });
+    validateUserInputs({ firstName, lastName, email, password });
+
     if (!isEmailValidate(email)) {
       throw new AppError("This is not a valid email. Try again!");
     }
 
-    if (!username || !email || !password) {
+    if (!firstName || !lastName || !email || !password) {
       throw new AppError("All fields are required", 403);
-    }
-
-    // Check if username or email is already registered
-    const isUsernameAlreadyRegistered = await prisma.user.findUnique({
-      where: { username: username },
-    });
-    if (isUsernameAlreadyRegistered) {
-      throw new AppError("Username already taken", 403);
     }
 
     const isEmailAlreadyRegistered = await prisma.user.findUnique({
       where: { email: email },
     });
+
     if (isEmailAlreadyRegistered) {
       throw new AppError("Email already taken", 403);
     }
@@ -49,13 +49,13 @@ export const registerUser = async (req, res, next) => {
       throw new AppError("The specified organization does not exist", 404);
     }
 
-    // hash the password
     const hashedPassword = await bcrypt.hash(password, 10);
 
     // create the user and associate with the existing organization
     const user = await prisma.user.create({
       data: {
-        username,
+        firstName,
+        lastName,
         email,
         password: hashedPassword,
         role: role.toUpperCase(),

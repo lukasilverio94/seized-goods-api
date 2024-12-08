@@ -18,7 +18,8 @@ export const loginUser = async (req, res, next) => {
       where: { email },
       select: {
         id: true,
-        username: true,
+        firstName: true,
+        lastName: true,
         email: true,
         password: true,
         role: true,
@@ -39,7 +40,8 @@ export const loginUser = async (req, res, next) => {
     const { accessToken, refreshToken } = generateTokens(
       {
         id: user.id,
-        username: user.username,
+        firstName: user.firstName,
+        lastName: user.lastName,
         email: user.email,
         organizationId: user.organizationId,
         role: user.role,

@@ -1,5 +1,89 @@
 import prisma from "../../prisma/client.js";
 import AppError from "../utils/AppError.js";
+import bcrypt from "bcrypt";
+
+export const createSocialOrganizationWithUser = async (req, res, next) => {
+  const {
+    name,
+    contactPerson,
+    email,
+    firstName,
+    lastName,
+    phone,
+    address,
+    qualifications,
+    categories,
+    password,
+  } = req.body;
+
+  if (!name || !email || !categories || categories.length === 0 || !password) {
+    return next(
+      new AppError("All fields are required, including user credentials", 400)
+    );
+  }
+
+  try {
+    const existingOrganization = await prisma.socialOrganization.findUnique({
+      where: { email },
+    });
+
+    if (existingOrganization) {
+      throw new AppError(
+        "This email is already taken for an organization",
+        403
+      );
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    //transactions
+    const newOrganization = await prisma.$transaction(async (prisma) => {
+      const organization = await prisma.socialOrganization.create({
+        data: {
+          name,
+          contactPerson,
+          email,
+          phone,
+          address,
+          qualifications,
+          categories: {
+            create: categories.map((categoryId) => ({
+              categoryId: parseInt(categoryId),
+            })),
+          },
+        },
+        include: { categories: true },
+      });
+
+      const user = await prisma.user.create({
+        data: {
+          email,
+          firstName,
+          lastName,
+          password: hashedPassword,
+          role: "USER",
+          organizationId: organization.id,
+        },
+      });
+
+      return { organization, user };
+    });
+
+    res.status(201).json({
+      message: "Social organization and user registered successfully",
+      organization: newOrganization.organization,
+      user: {
+        id: newOrganization.user.id,
+        firstName: newOrganization.user.firstName,
+        lastName: newOrganization.user.lastName,
+        email: newOrganization.user.email,
+        role: newOrganization.user.role,
+      },
+    });
+  } catch (error) {
+    next(error);
+  }
+};
 
 export const createSocialOrganization = async (req, res, next) => {
   const {

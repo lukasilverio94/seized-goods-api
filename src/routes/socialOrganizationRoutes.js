@@ -1,5 +1,6 @@
 import express from "express";
 import {
+  createSocialOrganizationWithUser,
   createSocialOrganization,
   deleteSocialOrganization,
   getAllSocialOrganizations,
@@ -10,6 +11,10 @@ import authMiddleware from "../middlewares/authMiddleware.js";
 
 const router = express.Router();
 
+router.post(
+  "/register-user-and-organization",
+  createSocialOrganizationWithUser
+);
 router.post("/", createSocialOrganization);
 router.get("/", getAllSocialOrganizations);
 router.get("/:id", getSocialOrganizationById);

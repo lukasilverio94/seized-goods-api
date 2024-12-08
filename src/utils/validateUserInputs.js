@@ -1,9 +1,11 @@
 import { isEmailValidate } from "./isEmailValidate.js";
 import AppError from "./AppError.js";
 
-function validateUserInputs({ username, email, password }) {
-  if (!username || username.length < 3)
-    throw new AppError("Username is too short.");
+function validateUserInputs({ firstName, lastName, email, password }) {
+  if (!firstName || firstName.length < 1)
+    throw new AppError("First name is too short.");
+  if (!lastName || lastName.length < 1)
+    throw new AppError("Last name is too short");
   if (!isEmailValidate(email))
     throw new AppError("This is not a valid email. Try again!");
   if (!password || password.length < 8)
