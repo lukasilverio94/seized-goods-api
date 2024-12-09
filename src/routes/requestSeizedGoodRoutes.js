@@ -8,9 +8,9 @@ import {
   deleteGoodRequestById,
   approveRequest,
 } from "../controllers/requestSeizedGoodController.js";
-import authMiddleware from "../middlewares/authMiddleware.js";
+import isAuthenticated from "../middlewares/isAuthenticated.js";
 
-router.post("/", authMiddleware, requestSeizedGoodItem);
+router.post("/", isAuthenticated, requestSeizedGoodItem);
 router.get("/", getAllGoodsRequests);
 router.get("/:id", getGoodRequestById);
 router.put("/:id", updateRequestGood);

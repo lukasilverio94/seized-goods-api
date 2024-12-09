@@ -2,7 +2,7 @@ import jwt from "jsonwebtoken";
 import dotenv from "dotenv";
 dotenv.config();
 
-const authMiddleware = async (req, res, next) => {
+const isAuthenticated = async (req, res, next) => {
   const token = req.cookies.accessToken;
 
   if (!token) {
@@ -18,4 +18,4 @@ const authMiddleware = async (req, res, next) => {
   }
 };
 
-export default authMiddleware;
+export default isAuthenticated;

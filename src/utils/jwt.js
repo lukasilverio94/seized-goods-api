@@ -14,6 +14,7 @@ export const generateAccessToken = (user, jti) => {
     firstName: user.firstName,
     lastName: user.lastName,
     email: user.email,
+    role: user.role,
     organizationId: user.organizationId,
   };
 
