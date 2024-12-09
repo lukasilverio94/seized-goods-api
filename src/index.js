@@ -1,4 +1,5 @@
 import express from "express";
+import adminRoutes from "./routes/adminRoutes.js";
 import seizedGoodsRoutes from "./routes/seizedGoodsRoutes.js";
 import socialOrganizationRoutes from "./routes/socialOrganizationRoutes.js";
 import userRoutes from "./routes/userRoutes.js";
@@ -38,6 +39,7 @@ app.use(express.urlencoded({ extended: true }));
 //Logger
 app.use(logger);
 
+app.use("/admin", adminRoutes);
 app.use("/events", sseRoutes);
 app.use("/api/v1/seized-goods", seizedGoodsRoutes);
 app.use("/api/v1/social-organizations", socialOrganizationRoutes);

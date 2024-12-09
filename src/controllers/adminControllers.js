@@ -35,13 +35,19 @@ export const approveSocialOrganization = async (req, res, next) => {
   const { organizationId } = req.params;
 
   try {
-    if (!req.user || req.user.role !== "ADMIN") {
-      throw new AppError(
-        "Unauthorized: Only admins can create other admins",
-        403
-      );
+    const organization = await prisma.socialOrganization.findUnique({
+      where: { id: parseInt(organizationId) },
+    });
+
+    if (!organization) {
+      throw new AppError("Organization not found", 404);
     }
-    const updatedOrganization = await prisma.socialOrganization.findUnique({
+
+    if (organization.status === "APPROVED") {
+      throw new AppError("This Organization is already approved.", 400);
+    }
+
+    const updatedOrganization = await prisma.socialOrganization.update({
       where: { id: parseInt(organizationId) },
       data: {
         status: "APPROVED",
@@ -49,7 +55,7 @@ export const approveSocialOrganization = async (req, res, next) => {
     });
 
     res.status(200).json({
-      message: `Social Organization: ${updatedOrganization} has been approved. Login to request goods!`,
+      message: `${updatedOrganization.name} has been approved. Login to request goods!`,
       organization: updatedOrganization,
     });
   } catch (error) {
