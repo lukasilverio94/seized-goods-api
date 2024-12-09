@@ -7,7 +7,7 @@ import {
   getSocialOrganizationById,
   updateSocialOrganization,
 } from "../controllers/socialOrganizationController.js";
-import authMiddleware from "../middlewares/authMiddleware.js";
+import isAuthenticated from "../middlewares/isAuthenticated.js";
 
 const router = express.Router();
 
