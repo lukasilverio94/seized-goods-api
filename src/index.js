@@ -1,4 +1,7 @@
 import express from "express";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 import adminRoutes from "./routes/adminRoutes.js";
 import seizedGoodsRoutes from "./routes/seizedGoodsRoutes.js";
 import socialOrganizationRoutes from "./routes/socialOrganizationRoutes.js";
@@ -15,11 +18,22 @@ import cors from "cors";
 import cookieParser from "cookie-parser";
 // server sent events
 import sseRoutes from "./events/sseRoutes.js";
+//swagger
+import swaggerUi from "swagger-ui-express";
+import { specs } from "./utils/swagger.js";
 
 configDotenv();
 cloudinaryConfig();
 
 const app = express();
+
+// Swagger UI
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(specs));
+
+// Home route
+app.get("/", (req, res) => {
+  res.sendFile(path.join(__dirname, "../public", "home.html"));
+});
 
 // CORS option config
 const corsOptions = {
@@ -42,7 +56,7 @@ app.use(logger);
 app.use("/admin", adminRoutes);
 app.use("/events", sseRoutes);
 app.use("/api/v1/seized-goods", seizedGoodsRoutes);
-app.use("/api/v1/social-organizations", socialOrganizationRoutes);
+app.use("/api/v1/organizations", socialOrganizationRoutes);
 app.use("/api/v1/users", userRoutes);
 app.use("/api/v1/auth", userAuthRoutes);
 app.use("/api/v1/categories", categoryRoutes);
