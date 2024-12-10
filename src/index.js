@@ -50,7 +50,7 @@ app.use("/api/v1/requests", requestSeizedGoodRoutes);
 // app.use("/api/allocations", allocationRoutes);
 app.use("/uploads", express.static("public/uploads"));
 
-// middlewares
+// error handling middleware should be at end
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 3000;

@@ -22,7 +22,7 @@ export const registerUser = async (req, res, next) => {
     validateUserInputs({ firstName, lastName, email, password });
 
     if (!isEmailValidate(email)) {
-      throw new AppError("This is not a valid email. Try again!");
+      return next(new AppError("This is not a valid email. Try again!", 400));
     }
 
     if (!firstName || !lastName || !email || !password || !organizationId) {

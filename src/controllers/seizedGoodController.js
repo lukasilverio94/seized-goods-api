@@ -74,7 +74,7 @@ export const getAllSeizedGoods = async (req, res, next) => {
     const filters = {};
 
     if (categoryId) {
-      filters.categoryId = parseInt(categoryId, 10);
+      filters.categoryId = parseInt(categoryId);
     }
 
     const seizedGoods = await prisma.seizedGood.findMany({
