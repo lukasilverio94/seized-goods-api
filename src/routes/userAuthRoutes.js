@@ -9,6 +9,7 @@ const router = express.Router();
  * /api/v1/auth/login:
  *   post:
  *     summary: Login User
+ *     tags: [User Authentication]
  *     description: Login User and generate tokens
  *     requestBody:
  *         required: true
@@ -35,6 +36,7 @@ router.post("/login", loginUser);
  * /api/v1/auth/me:
  *   get:
  *     summary: Retrieves Current Logged In User
+ *     tags: [User Authentication]
  *     description: Retrieves the current user that is logged in. It expects accessToken after Login.
  *     responses:
  *       200:

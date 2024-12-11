@@ -8,6 +8,7 @@ const router = express.Router();
  * /api/v1/users/register:
  *   post:
  *     summary: Create new User
+ *     tags: [User Registration]
  *     description: Register User with a role default set to "USER"
  *     responses:
  *       200:

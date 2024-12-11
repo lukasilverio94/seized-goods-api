@@ -16,6 +16,7 @@ const router = express.Router();
  * /api/v1/organizations/register:
  *   post:
  *     summary: Create Social Organization And User
+ *     tags: [Social Organizations]
  *     description: Create Social Organization And User relate to the Organization.
  *     responses:
  *       200:
@@ -78,6 +79,7 @@ router.post("/register", createSocialOrganizationWithUser);
  * /api/v1/organizations:
  *   post:
  *     summary: Create Social Organization Only
+ *     tags: [Social Organizations]
  *     description: Create Social Organization Only (No User Associated this request)
  *     responses:
  *       200:
@@ -131,6 +133,7 @@ router.post("/create", createSocialOrganization);
  * /api/v1/organizations:
  *   get:
  *     summary: Retrieves All registered Social Organizations
+ *     tags: [Social Organizations]
  *     description: Retrieves All registered Social Organizations including status('PENDING', 'APPROVED')
  *     responses:
  *       200:
@@ -145,6 +148,7 @@ router.get("/", getAllSocialOrganizations);
  * /api/v1/organizations/{id}:
  *   get:
  *     summary: Get Social Organization by ID
+ *     tags: [Social Organizations]
  *     description: Retrieve details of a specific Social Organization using its ID.
  *     parameters:
  *       - in: path
@@ -225,6 +229,7 @@ router.get("/:id", getSocialOrganizationById);
  * /api/v1/organizations/{id}:
  *   put:
  *     summary: Update Social Organization by ID
+ *     tags: [Social Organizations]
  *     description: Update details of a specific Social Organization using its ID.
  *     parameters:
  *       - in: path
@@ -302,6 +307,7 @@ router.put("/:id", updateSocialOrganization);
  * /api/v1/organizations/{id}:
  *   delete:
  *     summary: Delete Social Organization by ID
+ *     tags: [Social Organizations]
  *     description: Delete a specific Social Organization using its ID. This operation cannot be undone.
  *     parameters:
  *       - in: path
