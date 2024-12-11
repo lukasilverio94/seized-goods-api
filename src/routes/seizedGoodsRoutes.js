@@ -43,7 +43,7 @@ const router = express.Router();
  *               categoryId:
  *                 type: integer
  *                 description: ID of the category
- *               files:
+ *               images:
  *                 type: array
  *                 items:
  *                   type: string
