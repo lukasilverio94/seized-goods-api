@@ -1,24 +1,35 @@
 import prisma from "../../prisma/client.js";
-import { broadcastToClients } from "../events/serverSentEvents.js";
+import { broadcastToClients, sseClients } from "../events/serverSentEvents.js";
 import AppError from "../utils/AppError.js";
 import { uploadImagesToCloudinary } from "../utils/uploadToCloudinary.js";
-import { querySchema } from "../validation/seizedGoodSchema.js";
+import {
+  querySchema,
+  createSeizedGoodSchema,
+  updateSeizedGoodSchema,
+} from "../validation/seizedGoodSchema.js";
+import { integerIdSchema } from "../validation/integerIdSchema.js";
 
 export const createSeizedGood = async (req, res, next) => {
-  const { name, description, value, quantity, categoryId } = req.body;
-
-  if (!name || !description || !value) {
-    throw new AppError("All fields are required", 403);
-  }
-
   try {
+    const { error, value } = createSeizedGoodSchema.validate(req.body, {
+      abortEarly: false,
+    });
+
+    if (error) {
+      const validationErrors = error.details.map((err) => err.message);
+      return res.status(400).json({ errors: validationErrors });
+    }
+
+    // Destructure validated values
+    const { name, description, value: goodValue, quantity, categoryId } = value;
+
     const seizedGood = await prisma.seizedGood.create({
       data: {
         name,
         description,
         quantity,
         availableQuantity: quantity,
-        value: parseFloat(value),
+        value: parseFloat(goodValue),
         categoryId: parseInt(categoryId),
       },
     });
@@ -70,11 +81,9 @@ export const createSeizedGood = async (req, res, next) => {
 
 export const getAllSeizedGoods = async (req, res, next) => {
   try {
-    // Validate query parameters using the schema
     const { error, value } = querySchema.validate(req.query);
 
     if (error) {
-      // Return validation errors to the client
       return res
         .status(400)
         .json({ error: error.details.map((d) => d.message) });
@@ -82,7 +91,6 @@ export const getAllSeizedGoods = async (req, res, next) => {
 
     const { categoryId, searchTerm, page, limit } = value;
 
-    // filters dynamically
     const filters = {};
     if (categoryId) {
       filters.categoryId = categoryId;
@@ -94,7 +102,6 @@ export const getAllSeizedGoods = async (req, res, next) => {
       };
     }
 
-    // pagination offset (same as SQL)
     const offset = (page - 1) * limit;
 
     const seizedGoods = await prisma.seizedGood.findMany({
@@ -115,9 +122,16 @@ export const getAllSeizedGoods = async (req, res, next) => {
     next(error);
   }
 };
+
 export const getSeizedGoodById = async (req, res) => {
-  const { id } = req.params;
   try {
+    const { error } = integerIdSchema.validate(req.params);
+
+    if (error) {
+      res.status(400).json({ error: error.details.map((err) => err.message) });
+    }
+    const { id } = req.params;
+
     const seizedGood = await prisma.seizedGood.findUnique({
       where: { id: parseInt(id) },
       include: {
@@ -137,16 +151,25 @@ export const getSeizedGoodById = async (req, res) => {
 };
 
 export const updateSeizedGood = async (req, res, next) => {
-  const { id } = req.params;
-  const { name, description, value, quantity, categoryId } = req.body;
-
   try {
+    const { id } = req.params;
+    const { error, value } = updateSeizedGoodSchema.validate(req.body, {
+      abortEarly: false,
+    });
+
+    if (error) {
+      const validationErrors = error.details.map((err) => err.message);
+      return res.status(400).json({ errors: validationErrors });
+    }
+
+    const { name, description, value: goodValue, quantity, categoryId } = value;
+
     const data = {};
 
     if (name) data.name = name;
     if (description) data.description = description;
     if (quantity) data.quantity = quantity;
-    if (value) data.value = parseFloat(value);
+    if (goodValue) data.value = parseFloat(goodValue);
 
     if (categoryId) {
       const category = await prisma.category.findUnique({
@@ -175,9 +198,15 @@ export const updateSeizedGood = async (req, res, next) => {
 };
 
 export const deleteSeizedGood = async (req, res, next) => {
-  const { id } = req.params;
-
   try {
+    const { error } = integerIdSchema.validate(req.params);
+
+    if (error) {
+      res
+        .status(400)
+        .json({ message: error.details.map((err) => err.message) });
+    }
+    const { id } = req.params;
     const seizedGood = await prisma.seizedGood.findUnique({
       where: { id: parseInt(id) },
     });
