@@ -8,6 +8,7 @@ import {
   updateSocialOrganization,
 } from "../controllers/socialOrganizationController.js";
 import isAuthenticated from "../middlewares/isAuthenticated.js";
+import requireRole from "../middlewares/requireRole.js";
 
 const router = express.Router();
 
@@ -126,7 +127,12 @@ router.post("/register", createSocialOrganizationWithUser);
  *                     type: string
  *                     description: What are the qualifications of the Social Organization *
  */
-router.post("/create", createSocialOrganization);
+router.post(
+  "/create",
+  isAuthenticated,
+  requireRole("ADMIN"),
+  createSocialOrganization
+);
 
 /**
  * @swagger
@@ -300,7 +306,7 @@ router.get("/:id", getSocialOrganizationById);
  *       404:
  *         description: Social Organization not found.
  */
-router.put("/:id", updateSocialOrganization);
+router.put("/:id", isAuthenticated, updateSocialOrganization);
 
 /**
  * @swagger
@@ -324,6 +330,11 @@ router.put("/:id", updateSocialOrganization);
  *       500:
  *         description: Internal server error.
  */
-router.delete("/:id", deleteSocialOrganization);
+router.delete(
+  "/:id",
+  isAuthenticated,
+  requireRole("ADMIN"),
+  deleteSocialOrganization
+);
 
 export default router;
