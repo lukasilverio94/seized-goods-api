@@ -11,7 +11,11 @@ export const createSocialOrganizationWithUser = async (req, res, next) => {
     firstName,
     lastName,
     phone,
-    address,
+    streetName,
+    number,
+    city,
+    country,
+    zipCode,
     qualifications,
     categories,
     password,
@@ -28,7 +32,7 @@ export const createSocialOrganizationWithUser = async (req, res, next) => {
       !password
     ) {
       throw new AppError(
-        "First name, last name, email, at least one category and password are required.",
+        "First name, last name, email, at least one category, and password are required.",
         400
       );
     }
@@ -50,7 +54,7 @@ export const createSocialOrganizationWithUser = async (req, res, next) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    //transactions
+    // Transactions
     const newOrganization = await prisma.$transaction(async (prisma) => {
       const organization = await prisma.socialOrganization.create({
         data: {
@@ -58,7 +62,11 @@ export const createSocialOrganizationWithUser = async (req, res, next) => {
           contactPerson,
           email,
           phone,
-          address,
+          streetName,
+          number,
+          city,
+          country,
+          zipCode,
           qualifications,
           categories: {
             create: categories.map((categoryId) => ({
@@ -111,7 +119,11 @@ export const createSocialOrganization = async (req, res, next) => {
     contactPerson,
     email,
     phone,
-    address,
+    streetName,
+    number,
+    city,
+    country,
+    zipCode,
     qualifications,
     categories,
   } = req.body;
@@ -121,6 +133,7 @@ export const createSocialOrganization = async (req, res, next) => {
       new AppError("Name, email, and at least one category are required", 400)
     );
   }
+
   try {
     const newOrganization = await prisma.socialOrganization.create({
       data: {
@@ -128,7 +141,11 @@ export const createSocialOrganization = async (req, res, next) => {
         contactPerson,
         email,
         phone,
-        address,
+        streetName,
+        number,
+        city,
+        country,
+        zipCode,
         qualifications,
         categories: {
           create: categories.map((categoryId) => ({
@@ -140,6 +157,7 @@ export const createSocialOrganization = async (req, res, next) => {
         categories: true,
       },
     });
+
     res.status(201).json(newOrganization);
   } catch (error) {
     next(error);
@@ -192,6 +210,16 @@ export const deleteSocialOrganization = async (req, res, next) => {
   const { id } = req.params;
 
   try {
+    const organization = await prisma.socialOrganization.findUnique({
+      where: { id: parseInt(id) },
+    });
+
+    if (!organization) {
+      return res
+        .status(404)
+        .json({ message: "Social Organization not found." });
+    }
+
     await prisma.socialOrganization.delete({ where: { id: parseInt(id) } });
     res.status(204).end();
   } catch (error) {

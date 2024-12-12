@@ -15,7 +15,7 @@ model User {
   password       String
   role           UserRole            @default(USER)
   organizationId Int?
-  organization   SocialOrganization? @relation(fields: [organizationId], references: [id], onDelete: Cascade) // Optional relation
+  organization   SocialOrganization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   createdAt      DateTime            @default(now())
   updatedAt      DateTime            @updatedAt
   refreshToken   RefreshToken[]
@@ -27,7 +27,11 @@ model SocialOrganization {
   contactPerson  String
   email          String                       @unique
   phone          String
-  address        String
+  streetName     String
+  number         String
+  city           String
+  country        String
+  zipCode        String
   qualifications String
   status         OrgStatus                    @default(PENDING)
   createdAt      DateTime                     @default(now())
