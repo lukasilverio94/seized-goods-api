@@ -9,31 +9,22 @@ const router = express.Router();
  *   post:
  *     summary: Create new User
  *     tags: [User Registration]
- *     description: Register User with a role default set to "USER"
+ *     description: Register a user with a default role set to "USER".
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/User'
  *     responses:
  *       200:
+ *         description: The created user object.
  *         content:
  *           application/json:
  *             schema:
- *               type: array
- *               items:
- *                 type: object
- *                 properties:
- *                   firstName:
- *                     type: string
- *                     description: User's First name.
- *                   lastName:
- *                     type: string
- *                     description: User's Last name.
- *                   email:
- *                     type: string
- *                     description: User's Email.
- *                   organizationId:
- *                     type: integer
- *                     description: Associate to Social Organization ID.
- *                   password:
- *                     type: string
- *                     description: User's Password (min 8 characters).
+ *               $ref: '#/components/schemas/User'
+ *       400:
+ *         description: Invalid input or validation error.
  */
 router.post("/register", registerUser);
 
