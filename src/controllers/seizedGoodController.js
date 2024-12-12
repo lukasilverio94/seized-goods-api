@@ -2,6 +2,7 @@ import prisma from "../../prisma/client.js";
 import { broadcastToClients } from "../events/serverSentEvents.js";
 import AppError from "../utils/AppError.js";
 import { uploadImagesToCloudinary } from "../utils/uploadToCloudinary.js";
+import { querySchema } from "../validation/seizedGoodSchema.js";
 
 export const createSeizedGood = async (req, res, next) => {
   const { name, description, value, quantity, categoryId } = req.body;
@@ -69,13 +70,32 @@ export const createSeizedGood = async (req, res, next) => {
 
 export const getAllSeizedGoods = async (req, res, next) => {
   try {
-    const { categoryId } = req.query;
+    // Validate query parameters using the schema
+    const { error, value } = querySchema.validate(req.query);
 
-    const filters = {};
-
-    if (categoryId) {
-      filters.categoryId = parseInt(categoryId);
+    if (error) {
+      // Return validation errors to the client
+      return res
+        .status(400)
+        .json({ error: error.details.map((d) => d.message) });
     }
+
+    const { categoryId, searchTerm, page, limit } = value;
+
+    // filters dynamically
+    const filters = {};
+    if (categoryId) {
+      filters.categoryId = categoryId;
+    }
+    if (searchTerm) {
+      filters.name = {
+        contains: searchTerm,
+        mode: "insensitive",
+      };
+    }
+
+    // pagination offset (same as SQL)
+    const offset = (page - 1) * limit;
 
     const seizedGoods = await prisma.seizedGood.findMany({
       where: filters,
@@ -86,14 +106,15 @@ export const getAllSeizedGoods = async (req, res, next) => {
       orderBy: {
         createdAt: "desc",
       },
+      skip: offset,
+      take: limit,
     });
 
-    res.status(200).json(seizedGoods);
+    return res.status(200).json(seizedGoods);
   } catch (error) {
     next(error);
   }
 };
-
 export const getSeizedGoodById = async (req, res) => {
   const { id } = req.params;
   try {
