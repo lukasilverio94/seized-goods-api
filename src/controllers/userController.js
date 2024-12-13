@@ -5,8 +5,6 @@ import AppError from "../utils/AppError.js";
 import { generateTokens } from "../utils/jwt.js";
 import { addRefreshTokenToWhiteList } from "../services/refreshTokens.js";
 import { setAuthCookies } from "../utils/setAuthCookies.js";
-import { isEmailValidate } from "../utils/isEmailValidate.js";
-import { validateUserInputs } from "../utils/validateUserInputs.js";
 
 export const registerUser = async (req, res, next) => {
   const {
@@ -19,19 +17,6 @@ export const registerUser = async (req, res, next) => {
   } = req.body;
 
   try {
-    validateUserInputs({ firstName, lastName, email, password });
-
-    if (!isEmailValidate(email)) {
-      return next(new AppError("This is not a valid email. Try again!", 400));
-    }
-
-    if (!firstName || !lastName || !email || !password || !organizationId) {
-      throw new AppError(
-        "All fields are required: First name, last name, email, password and some existing Organization",
-        400
-      );
-    }
-
     const organization = await prisma.socialOrganization.findUnique({
       where: { id: organizationId },
     });

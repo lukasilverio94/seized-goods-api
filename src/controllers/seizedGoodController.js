@@ -2,7 +2,6 @@ import prisma from "../../prisma/client.js";
 import { broadcastToClients } from "../events/serverSentEvents.js";
 import AppError from "../utils/AppError.js";
 import { uploadImagesToCloudinary } from "../utils/uploadToCloudinary.js";
-import { querySchema } from "../validation/seizedGoodSchema.js";
 
 export const createSeizedGood = async (req, res, next) => {
   const { name, description, value, quantity, categoryId } = req.body;
