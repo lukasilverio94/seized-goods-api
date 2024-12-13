@@ -1,14 +1,10 @@
 import prisma from "../../prisma/client.js";
-import { broadcastToClients } from "../events/serverSentEvents.js";
+import { broadcastToClients, sseClients } from "../events/serverSentEvents.js";
 import AppError from "../utils/AppError.js";
 import { uploadImagesToCloudinary } from "../utils/uploadToCloudinary.js";
 
 export const createSeizedGood = async (req, res, next) => {
   const { name, description, value, quantity, categoryId } = req.body;
-
-  if (!name || !description || !value) {
-    throw new AppError("All fields are required", 403);
-  }
 
   try {
     const seizedGood = await prisma.seizedGood.create({
@@ -69,22 +65,12 @@ export const createSeizedGood = async (req, res, next) => {
 
 export const getAllSeizedGoods = async (req, res, next) => {
   try {
-    // Validate query parameters using the schema
-    const { error, value } = querySchema.validate(req.query);
+    const { categoryId, searchTerm, page = 1, limit = 10 } = req.query;
 
-    if (error) {
-      // Return validation errors to the client
-      return res
-        .status(400)
-        .json({ error: error.details.map((d) => d.message) });
-    }
-
-    const { categoryId, searchTerm, page, limit } = value;
-
-    // filters dynamically
     const filters = {};
+
     if (categoryId) {
-      filters.categoryId = categoryId;
+      filters.categoryId = parseInt(categoryId);
     }
     if (searchTerm) {
       filters.name = {
@@ -92,7 +78,6 @@ export const getAllSeizedGoods = async (req, res, next) => {
         mode: "insensitive",
       };
     }
-
     // pagination offset (same as SQL)
     const offset = (page - 1) * limit;
 
@@ -106,7 +91,7 @@ export const getAllSeizedGoods = async (req, res, next) => {
         createdAt: "desc",
       },
       skip: offset,
-      take: limit,
+      take: parseInt(limit),
     });
 
     return res.status(200).json(seizedGoods);
@@ -114,6 +99,7 @@ export const getAllSeizedGoods = async (req, res, next) => {
     next(error);
   }
 };
+
 export const getSeizedGoodById = async (req, res) => {
   const { id } = req.params;
   try {
