@@ -22,25 +22,6 @@ export const createSocialOrganizationWithUser = async (req, res, next) => {
   } = req.body;
 
   try {
-    if (
-      !name ||
-      !email ||
-      !firstName ||
-      !lastName ||
-      !categories ||
-      categories.length === 0 ||
-      !password
-    ) {
-      throw new AppError(
-        "First name, last name, email, at least one category, and password are required.",
-        400
-      );
-    }
-
-    if (!isEmailValidate(email)) {
-      throw new AppError("This is not a valid email. Try again!", 400);
-    }
-
     const existingOrganization = await prisma.socialOrganization.findUnique({
       where: { email },
     });

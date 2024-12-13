@@ -7,6 +7,17 @@ import {
   getSocialOrganizationById,
   updateSocialOrganization,
 } from "../controllers/socialOrganizationController.js";
+
+import {
+  validateCreateSocialOrganizationWithUser,
+  validateCreateSocialOrganization,
+  validateGetSocialOrganizationById,
+  validateUpdateSocialOrganization,
+  validateDeleteSocialOrganization,
+} from "../validators/socialOrganization.js";
+
+import { handleValidationErrors } from "../middlewares/handleValidationErrors.js";
+
 import isAuthenticated from "../middlewares/isAuthenticated.js";
 import requireRole from "../middlewares/requireRole.js";
 
@@ -73,7 +84,12 @@ const router = express.Router();
  *                     type: string
  *                     description: User's Password (min 8 characters).
  */
-router.post("/register", createSocialOrganizationWithUser);
+router.post(
+  "/register",
+  validateCreateSocialOrganizationWithUser,
+  handleValidationErrors,
+  createSocialOrganizationWithUser
+);
 
 /**
  * @swagger
@@ -131,6 +147,8 @@ router.post(
   "/create",
   isAuthenticated,
   requireRole("ADMIN"),
+  validateCreateSocialOrganization,
+  handleValidationErrors,
   createSocialOrganization
 );
 
@@ -228,7 +246,12 @@ router.get("/", getAllSocialOrganizations);
  *       404:
  *         description: Social Organization not found.
  */
-router.get("/:id", getSocialOrganizationById);
+router.get(
+  "/:id",
+  validateGetSocialOrganizationById,
+  handleValidationErrors,
+  getSocialOrganizationById
+);
 
 /**
  * @swagger
@@ -306,7 +329,13 @@ router.get("/:id", getSocialOrganizationById);
  *       404:
  *         description: Social Organization not found.
  */
-router.put("/:id", isAuthenticated, updateSocialOrganization);
+router.put(
+  "/:id",
+  isAuthenticated,
+  validateUpdateSocialOrganization,
+  handleValidationErrors,
+  updateSocialOrganization
+);
 
 /**
  * @swagger
@@ -334,6 +363,8 @@ router.delete(
   "/:id",
   isAuthenticated,
   requireRole("ADMIN"),
+  validateDeleteSocialOrganization,
+  handleValidationErrors,
   deleteSocialOrganization
 );
 
