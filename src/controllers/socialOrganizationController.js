@@ -1,7 +1,6 @@
 import prisma from "../../prisma/client.js";
 import AppError from "../utils/AppError.js";
 import bcrypt from "bcrypt";
-import { isEmailValidate } from "../utils/isEmailValidate.js";
 
 export const createSocialOrganizationWithUser = async (req, res, next) => {
   const {
