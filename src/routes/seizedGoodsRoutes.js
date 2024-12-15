@@ -6,7 +6,15 @@ import {
   updateSeizedGood,
   deleteSeizedGood,
 } from "../controllers/seizedGoodController.js";
+import {
+  validateCreateSeizedGood,
+  validateGetAllSeizedGoods,
+  validateDeleteSeizedGood,
+  validateGetSeizedGoodById,
+  validateUpdateSeizedGood,
+} from "../validators/seizedGood.js";
 
+import { handleValidationErrors } from "../middlewares/handleValidationErrors.js";
 import uploadFiles from "../middlewares/uploadFilesMulter.js";
 import isAuthenticated from "../middlewares/isAuthenticated.js";
 import requireRole from "../middlewares/requireRole.js";
@@ -65,6 +73,8 @@ router.post(
   "/",
   isAuthenticated,
   requireRole("ADMIN"),
+  validateCreateSeizedGood,
+  handleValidationErrors,
   uploadFiles.array("files", 5),
   createSeizedGood
 );
@@ -91,7 +101,12 @@ router.post(
  *               items:
  *                 $ref: '#/components/schemas/SeizedGood'
  */
-router.get("/", getAllSeizedGoods);
+router.get(
+  "/",
+  validateGetAllSeizedGoods,
+  handleValidationErrors,
+  getAllSeizedGoods
+);
 
 /**
  * @swagger
@@ -116,7 +131,12 @@ router.get("/", getAllSeizedGoods);
  *       404:
  *         description: Seized good not found
  */
-router.get("/:id", getSeizedGoodById);
+router.get(
+  "/:id",
+  validateGetSeizedGoodById,
+  handleValidationErrors,
+  getSeizedGoodById
+);
 
 /**
  * @swagger
@@ -167,7 +187,14 @@ router.get("/:id", getSeizedGoodById);
  *       401:
  *         description: Unauthorized
  */
-router.put("/:id", isAuthenticated, requireRole("ADMIN"), updateSeizedGood);
+router.put(
+  "/:id",
+  isAuthenticated,
+  requireRole("ADMIN"),
+  validateUpdateSeizedGood,
+  handleValidationErrors,
+  updateSeizedGood
+);
 
 /**
  * @swagger
@@ -192,6 +219,13 @@ router.put("/:id", isAuthenticated, requireRole("ADMIN"), updateSeizedGood);
  *       401:
  *         description: Unauthorized
  */
-router.delete("/:id", isAuthenticated, requireRole("ADMIN"), deleteSeizedGood);
+router.delete(
+  "/:id",
+  isAuthenticated,
+  requireRole("ADMIN"),
+  validateDeleteSeizedGood,
+  handleValidationErrors,
+  deleteSeizedGood
+);
 
 export default router;

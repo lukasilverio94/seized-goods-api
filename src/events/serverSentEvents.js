@@ -1,5 +1,5 @@
 // SSE Logic to send notifications to client (frontend)
-let sseClients = [];
+export let sseClients = [];
 
 export const addClient = (res, categories) => {
   const validCategories = Array.isArray(categories) ? categories : [];
