@@ -1,5 +1,5 @@
 import express from "express";
-import { registerUser } from "../controllers/userController.js";
+import { registerUser, verifyOtpUser } from "../controllers/userController.js";
 import { userValidationRules } from "../validators/user.js";
 import { handleValidationErrors } from "../middlewares/handleValidationErrors.js";
 
@@ -34,5 +34,7 @@ router.post(
   handleValidationErrors,
   registerUser
 );
+
+router.post("/verify-code", verifyOtpUser);
 
 export default router;

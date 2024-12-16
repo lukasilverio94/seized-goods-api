@@ -18,6 +18,7 @@ model User {
   organization   SocialOrganization? @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   createdAt      DateTime            @default(now())
   updatedAt      DateTime            @updatedAt
+  isVerified     Boolean             @default(false)
   refreshToken   RefreshToken[]
 }
 

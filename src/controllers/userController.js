@@ -1,10 +1,11 @@
 import prisma from "../../prisma/client.js";
 import bcrypt from "bcrypt";
-import { randomUUID } from "node:crypto";
 import AppError from "../utils/AppError.js";
-import { generateTokens } from "../utils/jwt.js";
-import { addRefreshTokenToWhiteList } from "../services/refreshTokens.js";
-import { setAuthCookies } from "../utils/setAuthCookies.js";
+import { sendOTPEmail } from "../config/nodemailer.js";
+
+// IMPORTANT!!!!
+// Temporary in-memory store for OTPs (use Redis or similar in production)
+const otpStore = new Map();
 
 export const registerUser = async (req, res, next) => {
   const {
@@ -51,19 +52,21 @@ export const registerUser = async (req, res, next) => {
         email,
         password: hashedPassword,
         role: role.toUpperCase(),
+        isVerified: false,
         organizationId,
       },
     });
 
-    // Generate tokens and store refresh token in whitelist
-    const jti = randomUUID();
-    const { accessToken, refreshToken } = generateTokens(user, jti);
-    await addRefreshTokenToWhiteList({ jti, refreshToken, userId: user.id });
+    // generate and send OTP CODE
+    const otp = Math.floor(100000 + Math.random() * 900000);
+    otpStore.set(email, { otp, expiresAt: Date.now() + 10 * 60 * 1000 }); //store otp temporarily
 
-    setAuthCookies(res, accessToken, refreshToken);
+    await sendOTPEmail(email, otp);
+    console.log(otp);
 
     res.status(200).json({
-      message: "User registered successfully",
+      message:
+        "User registered successfully. A verification code has been sent to your email. Please use to confirm your account.",
       user: {
         id: user.id,
         email: user.email,
@@ -73,6 +76,42 @@ export const registerUser = async (req, res, next) => {
         organizationId: user.organizationId,
       },
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const verifyOtpUser = async (req, res, next) => {
+  const { email, otp } = req.body;
+
+  try {
+    if (!email || !otp) {
+      throw new AppError("Email and verification code are required", 400);
+    }
+    const storedOptData = otpStore.get(email);
+
+    if (!storedOptData) {
+      throw new AppError("Verification code expired or invalid", 403);
+    }
+
+    const { otp: storedOtp, expiresAt } = storedOptData;
+
+    if (Date.now() > expiresAt) {
+      otpStore.delete(email);
+      throw new AppError("Verification code expired!", 403);
+    }
+
+    if (parseInt(otp) !== storedOtp) {
+      throw new AppError("Invalid verification code", 403);
+    }
+
+    await prisma.user.update({
+      where: { email },
+      data: { isVerified: true },
+    });
+
+    otpStore.delete(email);
+    res.status(200).json({ message: "Verification successful!" });
   } catch (error) {
     next(error);
   }
