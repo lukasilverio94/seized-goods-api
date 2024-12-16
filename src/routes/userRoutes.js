@@ -3,6 +3,8 @@ import {
   registerUser,
   verifyOtpUser,
   resendOtpCode,
+  requestResetPassword,
+  resetPassword,
 } from "../controllers/userController.js";
 import { userValidationRules } from "../validators/user.js";
 import { handleValidationErrors } from "../middlewares/handleValidationErrors.js";
@@ -41,5 +43,7 @@ router.post(
 
 router.post("/verify-otp", verifyOtpUser);
 router.post("/resend-otp", resendOtpCode);
+router.post("/reset-password/request", requestResetPassword);
+router.post("/reset-password", resetPassword);
 
 export default router;

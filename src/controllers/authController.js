@@ -24,6 +24,7 @@ export const loginUser = async (req, res, next) => {
         password: true,
         role: true,
         organizationId: true,
+        isVerified: true,
       },
     });
     if (!user) {

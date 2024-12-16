@@ -1,7 +1,8 @@
 import prisma from "../../prisma/client.js";
+import crypto from "node:crypto";
 import bcrypt from "bcrypt";
 import AppError from "../utils/AppError.js";
-import { sendOTPEmail } from "../config/nodemailer.js";
+import { sendOTPEmail, sendResetPasswordEmail } from "../config/nodemailer.js";
 import { storeOtp, getOtp, deleteOtp } from "../utils/otpStore.js";
 
 export const registerUser = async (req, res, next) => {
@@ -56,7 +57,7 @@ export const registerUser = async (req, res, next) => {
 
     // generate and send OTP CODE
     const otp = Math.floor(100000 + Math.random() * 900000);
-
+    console.log(otp);
     // store otp on redis
     await storeOtp(email, otp);
 
@@ -142,6 +143,80 @@ export const resendOtpCode = async (req, res, next) => {
     res
       .status(200)
       .json({ message: "OTP send successfully. Please check your email" });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const requestResetPassword = async (req, res, next) => {
+  const { email } = req.body;
+
+  try {
+    if (!email) {
+      throw new AppError("Email is required", 400);
+    }
+
+    const user = await prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (!user) {
+      throw new AppError("No account found with this email", 404);
+    }
+
+    const resetPassToken = crypto.randomBytes(32).toString("hex");
+    const resetPassTokenExpiry = new Date(Date.now() + 3600 * 1000); // 1 hour from now
+
+    await prisma.user.update({
+      where: { email },
+      data: { resetPassToken, resetPassTokenExpiry },
+    });
+
+    const resetLink = `${process.env.FRONTEND_URL}/reset-password?token=${resetPassToken}`;
+    console.log("reset link:", resetLink);
+    await sendResetPasswordEmail(email, resetLink);
+
+    res
+      .status(200)
+      .json({ message: "Password reset link sent. Please check your email." });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const resetPassword = async (req, res, next) => {
+  try {
+    const { token, newPassword } = req.body;
+
+    if (!token || !newPassword) {
+      throw new AppError("Token and a new password are required", 400);
+    }
+
+    const user = await prisma.user.findFirst({
+      where: {
+        resetPassToken: token,
+        resetPassTokenExpiry: { gte: new Date() },
+      },
+    });
+
+    if (!user) {
+      throw new AppError("Invalid or expired reset token", 400);
+    }
+
+    const newHashedPassword = await bcrypt.hash(newPassword, 10);
+
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        password: newHashedPassword,
+        resetPassToken: null,
+        resetPassTokenExpiry: null,
+      },
+    });
+
+    res
+      .status(200)
+      .json({ message: "Password reset successfully. You can login now!" });
   } catch (error) {
     next(error);
   }
