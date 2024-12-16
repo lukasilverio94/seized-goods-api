@@ -6,7 +6,7 @@ const isProduction = process.env.NODE_ENV === "production";
 export const setAuthCookies = (res, accessToken, refreshToken) => {
   res.cookie("accessToken", accessToken, {
     httpOnly: true,
-    maxAge: 15 * 60 * 1000, //15min in ms
+    maxAge: 45 * 60 * 1000, //45 min in ms
     secure: process.env.NODE_ENV === "production",
     sameSite: isProduction ? "strict" : "lax",
   });
