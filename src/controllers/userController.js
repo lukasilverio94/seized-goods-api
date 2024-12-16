@@ -2,10 +2,7 @@ import prisma from "../../prisma/client.js";
 import bcrypt from "bcrypt";
 import AppError from "../utils/AppError.js";
 import { sendOTPEmail } from "../config/nodemailer.js";
-
-// IMPORTANT!!!!
-// Temporary in-memory store for OTPs (use Redis or similar in production)
-const otpStore = new Map();
+import { storeOtp, getOtp, deleteOtp } from "../utils/otpStore.js";
 
 export const registerUser = async (req, res, next) => {
   const {
@@ -59,10 +56,11 @@ export const registerUser = async (req, res, next) => {
 
     // generate and send OTP CODE
     const otp = Math.floor(100000 + Math.random() * 900000);
-    otpStore.set(email, { otp, expiresAt: Date.now() + 10 * 60 * 1000 }); //store otp temporarily
+
+    // store otp on redis
+    await storeOtp(email, otp);
 
     await sendOTPEmail(email, otp);
-    console.log(otp);
 
     res.status(200).json({
       message:
@@ -88,16 +86,16 @@ export const verifyOtpUser = async (req, res, next) => {
     if (!email || !otp) {
       throw new AppError("Email and verification code are required", 400);
     }
-    const storedOptData = otpStore.get(email);
+    const storedOtpData = await getOtp(email);
 
-    if (!storedOptData) {
+    if (!storedOtpData) {
       throw new AppError("Verification code expired or invalid", 403);
     }
 
-    const { otp: storedOtp, expiresAt } = storedOptData;
+    const { otp: storedOtp, expiresAt } = storedOtpData;
 
     if (Date.now() > expiresAt) {
-      otpStore.delete(email);
+      await deleteOtp(email);
       throw new AppError("Verification code expired!", 403);
     }
 
@@ -110,8 +108,40 @@ export const verifyOtpUser = async (req, res, next) => {
       data: { isVerified: true },
     });
 
-    otpStore.delete(email);
+    await deleteOtp(email);
     res.status(200).json({ message: "Verification successful!" });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const resendOtpCode = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+
+    if (!email) {
+      throw new AppError("Email is required", 400);
+    }
+
+    // check if OTP exists for this email
+    const existingOtpData = await getOtp(email);
+
+    if (!existingOtpData) {
+      throw new AppError(
+        "No OTP request found for this email. Please register first.",
+        404
+      );
+    }
+
+    const newOtp = Math.floor(100000 + Math.random() * 900000); // 6 digit OTP
+
+    await storeOtp(email, newOtp);
+
+    await sendOTPEmail(email, newOtp);
+
+    res
+      .status(200)
+      .json({ message: "OTP send successfully. Please check your email" });
   } catch (error) {
     next(error);
   }

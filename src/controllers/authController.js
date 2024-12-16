@@ -30,6 +30,13 @@ export const loginUser = async (req, res, next) => {
       throw new AppError("Invalid credentials", 401);
     }
 
+    if (!user.isVerified) {
+      throw new AppError(
+        "Your account is still not verified, please verify with the OTP code sent to your email or request new OTP code.",
+        400
+      );
+    }
+
     const isValidPassword = await bcrypt.compare(password, user.password);
     if (!isValidPassword) {
       throw new AppError("Invalid login credentials", 403);
