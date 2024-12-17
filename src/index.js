@@ -37,7 +37,11 @@ app.get("/", (req, res) => {
 
 // CORS option config
 const corsOptions = {
-  origin: "http://localhost:5173",
+  origin: [
+    "http://localhost:3001",
+    "http://localhost:5173",
+    "http://localhost:3000",
+  ],
   credentials: true,
   optionsSuccessStatus: 200,
   allowedHeaders: ["Content-Type"],

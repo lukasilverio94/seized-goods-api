@@ -8,6 +8,14 @@ import {
 } from "../controllers/userController.js";
 import { userValidationRules } from "../validators/user.js";
 import { handleValidationErrors } from "../middlewares/handleValidationErrors.js";
+import {
+  validateOtpCodeRules,
+  resendOtpCodeRules,
+} from "../validators/otpCode.js";
+import {
+  requestResetPassRules,
+  resetPasswordRules,
+} from "../validators/resetPassword.js";
 
 const router = express.Router();
 
@@ -41,9 +49,31 @@ router.post(
   registerUser
 );
 
-router.post("/verify-otp", verifyOtpUser);
-router.post("/resend-otp", resendOtpCode);
-router.post("/reset-password/request", requestResetPassword);
-router.post("/reset-password", resetPassword);
+router.post(
+  "/verify-otp",
+  validateOtpCodeRules,
+  handleValidationErrors,
+  verifyOtpUser
+);
+
+router.post(
+  "/resend-otp",
+  resendOtpCodeRules,
+  handleValidationErrors,
+  resendOtpCode
+);
+
+router.post(
+  "/reset-password/request",
+  requestResetPassRules,
+  handleValidationErrors,
+  requestResetPassword
+);
+router.post(
+  "/reset-password",
+  resetPasswordRules,
+  handleValidationErrors,
+  resetPassword
+);
 
 export default router;
