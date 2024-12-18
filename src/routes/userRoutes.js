@@ -49,6 +49,29 @@ router.post(
   registerUser
 );
 
+/**
+ * @swagger
+ * /api/v1/users/verify-otp:
+ *   post:
+ *     summary: Verify OTP Code
+ *     tags: [User Registration]
+ *     description: Verify the sent OTP code to user's email.
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/OTP'
+ *     responses:
+ *       200:
+ *         description: User verified successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/OTP'
+ *       400:
+ *         description: Invalid input or validation error.
+ */
 router.post(
   "/verify-otp",
   validateOtpCodeRules,
