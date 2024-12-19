@@ -24,6 +24,7 @@ const bootstrapAdmin = async () => {
         lastName: "Admin",
         email: adminEmail,
         password: hashedPassword,
+        isVerified: true,
         role: "ADMIN",
       },
     });
