@@ -45,6 +45,23 @@ export const getAllFeedbacks = async (req, res, next) => {
   }
 };
 
+export const getFeedback = async (req, res, next) => {
+  try {
+    const { feedbackId } = req.params;
+    const feedback = await prisma.feedback.findUnique({
+      where: { id: parseInt(feedbackId) },
+    });
+
+    if (!feedback) {
+      throw new AppError("Feedback not found", 404);
+    }
+
+    res.status(200).json(feedback);
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const updateFeedback = async (req, res, next) => {
   try {
     const { feedbackId } = req.params;

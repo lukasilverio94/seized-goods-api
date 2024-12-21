@@ -3,6 +3,7 @@ import {
   addFeedback,
   deleteFeedback,
   getAllFeedbacks,
+  getFeedback,
   updateFeedback,
 } from "../controllers/feedbackControllers.js";
 import { validateCreateFeedback } from "../validators/feedbacks.js";
@@ -21,6 +22,9 @@ router.post(
 );
 
 router.get("/", getAllFeedbacks);
+
+router.get("/:feedbackId", getFeedback);
+
 router.put(
   "/:feedbackId",
   isAuthenticated,
