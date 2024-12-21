@@ -115,9 +115,8 @@ model Feedback {
   id             Int      @id @default(autoincrement())
   organizationId Int
   seizedGoodId   Int
-  testimonial    String? // Testimonials or success stories
-  photos         String[] // Paths to uploaded photos
-  impactStats    String? // Usage or social impact stats
+  testimonial    String?
+  impactStats    String?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
