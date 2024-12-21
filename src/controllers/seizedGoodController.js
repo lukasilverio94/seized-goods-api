@@ -4,7 +4,8 @@ import AppError from "../utils/AppError.js";
 import { uploadImagesToCloudinary } from "../utils/uploadToCloudinary.js";
 
 export const createSeizedGood = async (req, res, next) => {
-  const { name, description, value, quantity, categoryId } = req.body;
+  const { name, description, value, quantity, categoryId, condition } =
+    req.body;
 
   try {
     const seizedGood = await prisma.seizedGood.create({
@@ -15,6 +16,7 @@ export const createSeizedGood = async (req, res, next) => {
         availableQuantity: quantity,
         value: parseFloat(value),
         categoryId: parseInt(categoryId),
+        condition: condition,
       },
     });
 
@@ -35,6 +37,7 @@ export const createSeizedGood = async (req, res, next) => {
       quantity: seizedGood.availableQuantity,
       description: seizedGood.description,
       category: category.name,
+      condition: seizedGood.condition,
     };
 
     // Notify NGOs clients for the corresponding category by id

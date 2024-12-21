@@ -60,18 +60,19 @@ model SocialOrganizationCategory {
 }
 
 model SeizedGood {
-  id                Int          @id @default(autoincrement())
+  id                Int           @id @default(autoincrement())
   name              String
   description       String
   value             Float
-  quantity          Int          @default(1)
-  availableQuantity Int          @default(0) // inventory control
-  status            GoodStatus   @default(PENDING)
-  createdAt         DateTime     @default(now())
-  updatedAt         DateTime     @updatedAt
+  quantity          Int           @default(1)
+  availableQuantity Int           @default(0) // inventory control
+  status            GoodStatus    @default(PENDING)
+  condition         GoodCondition
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
   images            Image[]
   categoryId        Int
-  category          Category     @relation(fields: [categoryId], references: [id])
+  category          Category      @relation(fields: [categoryId], references: [id])
   allocations       Allocation[]
   requests          Request[] // Requests tied to this seized good
   feedbacks         Feedback[] // Feedback on the good's usage
@@ -154,6 +155,13 @@ enum GoodStatus {
   ALLOCATED
   RECEIVED
   DESTROYED
+}
+
+enum GoodCondition {
+  USED
+  REFURBISHED
+  NEW
+  GOOD
 }
 
 enum OrgStatus {

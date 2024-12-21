@@ -1,5 +1,7 @@
 import { body, param, query } from "express-validator";
 
+const ALLOWED_CONDITIONS = ["NEW", "USED", "REFURBISHED"];
+
 export const validateCreateSeizedGood = [
   body("name")
     .notEmpty()
@@ -26,6 +28,12 @@ export const validateCreateSeizedGood = [
     .withMessage("Category ID is required")
     .isInt()
     .withMessage("Category ID must be an integer"),
+  body("condition")
+    .notEmpty()
+    .withMessage("Condition is required")
+    .customSanitizer((value) => value.toUpperCase())
+    .isIn(ALLOWED_CONDITIONS)
+    .withMessage(`Condition must be one of: ${ALLOWED_CONDITIONS.join(", ")}`),
 ];
 
 export const validateUpdateSeizedGood = [
@@ -51,6 +59,11 @@ export const validateUpdateSeizedGood = [
     .optional()
     .isInt()
     .withMessage("Category ID must be an integer"),
+  body("condition")
+    .optional()
+    .customSanitizer((value) => value.toUpperCase())
+    .isIn(ALLOWED_CONDITIONS)
+    .withMessage(`Condition must be one of: ${ALLOWED_CONDITIONS.join(", ")}`),
 ];
 
 export const validateGetAllSeizedGoods = [
