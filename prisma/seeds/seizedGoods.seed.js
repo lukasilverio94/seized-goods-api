@@ -2,6 +2,13 @@ import { PrismaClient } from "@prisma/client";
 
 const prisma = new PrismaClient();
 
+const GOOD_CONDITIONS = ["NEW", "USED", "REFURBISHED"];
+
+function getRandomEnumValue(enumArray) {
+  const randomIndex = Math.floor(Math.random() * enumArray.length);
+  return enumArray[randomIndex];
+}
+
 export async function seedSeizedGoods() {
   console.log("Seeding seized goods...");
 
@@ -12,6 +19,7 @@ export async function seedSeizedGoods() {
     const quantity = Math.floor(Math.random() * 100) + 1;
     const availableQuantity = quantity;
     const value = (Math.random() * 100).toFixed(2);
+    const condition = getRandomEnumValue(GOOD_CONDITIONS);
 
     seizedGoods.push({
       name: `Seized Good ${i + 1}`,
@@ -20,6 +28,7 @@ export async function seedSeizedGoods() {
       quantity,
       availableQuantity,
       categoryId: randomCategoryId,
+      condition,
     });
   }
 
@@ -33,8 +42,10 @@ export async function seedSeizedGoods() {
     );
     console.log("Seized goods seeded successfully.");
   } catch (error) {
-    console.error("Error seeding seized goods:", error);
+    console.error("Error seeding seized goods:", error.message, error.stack);
   } finally {
     await prisma.$disconnect();
   }
 }
+
+seedSeizedGoods();
