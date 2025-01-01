@@ -68,7 +68,7 @@ export const createSeizedGood = async (req, res, next) => {
 
 export const getAllSeizedGoods = async (req, res, next) => {
   try {
-    const { categoryId, searchTerm, page = 1, limit = 10 } = req.query;
+    const { categoryId, searchTerm, page = 1, limit } = req.query;
 
     const filters = {};
 
@@ -81,8 +81,6 @@ export const getAllSeizedGoods = async (req, res, next) => {
         mode: "insensitive",
       };
     }
-    // pagination offset (same as SQL)
-    const offset = (page - 1) * limit;
 
     const seizedGoods = await prisma.seizedGood.findMany({
       where: filters,
@@ -93,8 +91,10 @@ export const getAllSeizedGoods = async (req, res, next) => {
       orderBy: {
         createdAt: "desc",
       },
-      skip: offset,
-      take: parseInt(limit),
+      ...(page && page > 1
+        ? { skip: (page - 1) * (limit ? parseInt(limit) : 10) }
+        : {}), // Include `skip` only if it's valid
+      ...(limit ? { take: parseInt(limit) } : {}),
     });
 
     return res.status(200).json(seizedGoods);
