@@ -1,7 +1,7 @@
 import bcrypt from "bcrypt";
 import prisma from "../../prisma/client.js";
 
-const bootstrapAdmin = async () => {
+export const bootstrapAdmin = async () => {
   const adminEmail = process.env.ADMIN_EMAIL;
   const adminPassword = process.env.ADMIN_PASSWORD;
 
