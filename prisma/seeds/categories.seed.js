@@ -15,16 +15,26 @@ export async function seedCategories() {
   ];
 
   try {
+    console.log(`Seeding ${categories.length} categories...`);
+
     await Promise.all(
-      categories.map((category) =>
-        prisma.category.create({
-          data: category,
-        })
-      )
+      categories.map(async (category) => {
+        try {
+          await prisma.category.upsert({
+            where: { name: category.name },
+            update: {},
+            create: category,
+          });
+          console.log(`Category "${category.name}" seeded successfully.`);
+        } catch (error) {
+          console.error(`Error seeding category "${category.name}":`, error);
+        }
+      })
     );
+
     console.log("Categories seeded successfully.");
   } catch (error) {
-    console.error("Error seeding categories:", error);
+    console.error("Error during category seeding:", error);
   } finally {
     await prisma.$disconnect();
   }
