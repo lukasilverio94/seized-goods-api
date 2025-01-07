@@ -25,7 +25,6 @@ export async function seedCategories() {
             update: {},
             create: category,
           });
-          console.log(`Category "${category.name}" seeded successfully.`);
         } catch (error) {
           console.error(`Error seeding category "${category.name}":`, error);
         }

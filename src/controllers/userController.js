@@ -21,23 +21,20 @@ export const registerUser = async (req, res, next) => {
     });
 
     if (!organization) {
-      throw new AppError("Organization not found!", 404);
+      throw new AppError("The specified organization does not exist!", 404);
     }
 
-    const existingUser = await prisma.user.findUnique({
-      where: { email: email },
-    });
+    // validate email uniqueness across users and organizations
+    const [existingUser, existingOrganization] = await prisma.$transaction([
+      prisma.user.findUnique({ where: { email } }),
+      prisma.socialOrganization.findUnique({ where: { email } }),
+    ]);
 
-    if (existingUser) {
-      throw new AppError("Email already taken", 403);
-    }
-
-    const existingOrganization = await prisma.socialOrganization.findUnique({
-      where: { id: organizationId },
-    });
-
-    if (!existingOrganization) {
-      throw new AppError("The specified organization does not exist", 404);
+    if (existingUser || existingOrganization) {
+      throw new AppError(
+        "Email already in use for a user or organization",
+        403
+      );
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -55,13 +52,24 @@ export const registerUser = async (req, res, next) => {
       },
     });
 
-    // generate and send OTP CODE
+    // OTP LOGIC
+    const existingOtp = await getOtp(email);
+    if (existingOtp) {
+      await deleteOtp(email);
+    }
     const otp = Math.floor(100000 + Math.random() * 900000);
-    console.log(otp);
-    // store otp on redis
     await storeOtp(email, otp);
 
-    await sendOTPEmail(email, otp);
+    // send OTP to email
+    try {
+      await sendOTPEmail(email, otp);
+    } catch (emailError) {
+      console.error("Failed to send OTP email:", emailError);
+      throw new AppError(
+        "Could not send verification code to email. Try again later.",
+        500
+      );
+    }
 
     res.status(200).json({
       message:
