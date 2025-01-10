@@ -1,4 +1,5 @@
 import prisma from "../../prisma/client.js";
+import { broadcastToClients } from "../events/serverSentEvents.js";
 import AppError from "../utils/AppError.js";
 import bcrypt from "bcrypt";
 
