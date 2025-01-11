@@ -125,6 +125,15 @@ model Feedback {
   seizedGood   SeizedGood         @relation(fields: [seizedGoodId], references: [id])
 }
 
+model ContactMessage {
+  id        String   @id @default(uuid())
+  userName  String
+  userEmail String
+  subject   String
+  message   String
+  createdAt DateTime @default(now())
+}
+
 model Allocation {
   id             Int      @id @default(autoincrement())
   seizedGoodId   Int

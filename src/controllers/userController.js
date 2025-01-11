@@ -2,7 +2,10 @@ import prisma from "../../prisma/client.js";
 import crypto from "node:crypto";
 import bcrypt from "bcrypt";
 import AppError from "../utils/AppError.js";
-import { sendOTPEmail, sendResetPasswordEmail } from "../config/nodemailer.js";
+import {
+  sendOTPEmail,
+  sendResetPasswordEmail,
+} from "../services/EmailService.js";
 import { storeOtp, getOtp, deleteOtp } from "../utils/otpStore.js";
 
 export const registerUser = async (req, res, next) => {
