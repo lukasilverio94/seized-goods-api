@@ -1,6 +1,14 @@
 import { Router } from "express";
-import { contactUs } from "../controllers/contactUsController.js";
-import { contactUsValidationRules } from "../validators/contactUsForm.js";
+import {
+  handlePostContactUs,
+  handleGetAllMessages,
+  handleGetMessageById,
+  handleDeleteMessage,
+} from "../controllers/contactUsController.js";
+import {
+  contactUsValidationRules,
+  uuidMessageValidationRules,
+} from "../validators/contactUs.js";
 import { handleValidationErrors } from "../middlewares/handleValidationErrors.js";
 import contactFormLimiter from "../middlewares/rateLimitRequest.js";
 
@@ -11,7 +19,23 @@ router.post(
   contactFormLimiter,
   contactUsValidationRules,
   handleValidationErrors,
-  contactUs
+  handlePostContactUs
+);
+
+router.get("", handleGetAllMessages);
+
+router.get(
+  "/:msgId",
+  uuidMessageValidationRules,
+  handleValidationErrors,
+  handleGetMessageById
+);
+
+router.delete(
+  "/:msgId",
+  uuidMessageValidationRules,
+  handleValidationErrors,
+  handleDeleteMessage
 );
 
 export default router;

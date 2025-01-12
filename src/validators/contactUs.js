@@ -1,4 +1,4 @@
-import { body } from "express-validator";
+import { body, param } from "express-validator";
 
 export const contactUsValidationRules = [
   body("userName")
@@ -27,4 +27,8 @@ export const contactUsValidationRules = [
     .withMessage("Message should be a text")
     .isLength({ min: 8 })
     .withMessage("Message must be at least 8 characters long"),
+];
+
+export const uuidMessageValidationRules = [
+  param("msgId").isUUID().withMessage("Invalid ID format"),
 ];
