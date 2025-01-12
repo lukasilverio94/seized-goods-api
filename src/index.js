@@ -11,6 +11,7 @@ import userAuthRoutes from "./routes/userAuthRoutes.js";
 import categoryRoutes from "./routes/categoryItemRoutes.js";
 import requestSeizedGoodRoutes from "./routes/requestSeizedGoodRoutes.js";
 import feedbackRoutes from "./routes/feedbackRoutes.js";
+import contactUsRoutes from "./routes/contactUsRoutes.js";
 // import allocationRoutes from "./routes/allocationRoutes.js";
 import { configDotenv } from "dotenv";
 import { errorHandler } from "./middlewares/errorHandler.js";
@@ -70,6 +71,7 @@ app.use("/api/v1/auth", userAuthRoutes);
 app.use("/api/v1/categories", categoryRoutes);
 app.use("/api/v1/requests", requestSeizedGoodRoutes);
 app.use("/api/v1/feedbacks", feedbackRoutes);
+app.use("/api/v1/contact", contactUsRoutes);
 // app.use("/api/allocations", allocationRoutes);
 app.use("/uploads", express.static("public/uploads"));
 
