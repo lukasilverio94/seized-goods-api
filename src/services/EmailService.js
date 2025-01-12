@@ -17,10 +17,8 @@ export const contactUsByEmail = async (name, email, subject, message) => {
 
   try {
     await transporter.sendMail(mailOptions);
-    console.log("Sent email from form contact us successfully");
   } catch (error) {
-    console.log("Error to contact us. Please try again later");
-    throw new Error("Error sending message, Try again later");
+    throw new Error("Error sending contact message. Try again later");
   }
 };
 

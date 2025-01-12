@@ -4,6 +4,7 @@ import {
   handleGetAllMessages,
   handleGetMessageById,
   handleDeleteMessage,
+  handleDeleteAllMessages
 } from "../controllers/contactUsController.js";
 import {
   contactUsValidationRules,
@@ -30,6 +31,8 @@ router.get(
   handleValidationErrors,
   handleGetMessageById
 );
+
+router.delete("", handleDeleteAllMessages)
 
 router.delete(
   "/:msgId",

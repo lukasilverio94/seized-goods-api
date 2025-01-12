@@ -76,3 +76,21 @@ export const handleDeleteMessage = async (req, res, next) => {
     next(error);
   }
 };
+
+
+export const handleDeleteAllMessages = async(req, res, next) => {
+   try {
+    const messages = await prisma.contactMessage.findMany({});
+
+    if(!messages || messages.length === 0){
+      return res.status(404).json({message: "No messages to display"});
+    }
+
+    await prisma.contactMessage.deleteMany({});
+  
+    res.status(200).json({message: "All contact messages has been deleted"});
+
+  } catch(error){
+    next(error);
+  }
+}
