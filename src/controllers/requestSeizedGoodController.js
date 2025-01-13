@@ -92,6 +92,7 @@ export const requestSeizedGoodItem = async (req, res, next) => {
       .status(201)
       .json({ message: "Request created successfully.", request: result });
   } catch (error) {
+    console.error("Error details:", error);
     next(error);
   }
 };
@@ -117,16 +118,47 @@ export const getAllGoodsRequests = async (req, res, next) => {
 export const getGoodRequestById = async (req, res, next) => {
   try {
     const { id } = req.params;
+
+    if (!id || isNaN(id)) {
+      return res.status(400).json({ message: "Invalid or missing ID" });
+    }
+
     const request = await prisma.request.findUnique({
-      where: { id: parseInt(id) },
+      where: { id: parseInt(id, 10) },
+      include: { seizedGood: true },
     });
 
     if (!request) {
-      throw new AppError("Request not found", 404);
+      return res.status(404).json({ message: "Request not found" });
     }
 
     res.status(200).json(request);
   } catch (error) {
+    next(error);
+  }
+};
+
+export const getUserRequests = async (req, res, next) => {
+  try {
+    const { organizationId } = req.user;
+
+    if (!organizationId) {
+      throw new AppError("User is not associated with an organization", 403);
+    }
+
+    const userRequests = await prisma.request.findMany({
+      where: { organizationId },
+      orderBy: { createdAt: "desc" },
+      include: { seizedGood: true },
+    });
+
+    if (!userRequests.length) {
+      return res.status(404).json({ message: "No requests found" });
+    }
+
+    res.status(200).json(userRequests);
+  } catch (error) {
+    console.error("Error fetching user requests:", error);
     next(error);
   }
 };
