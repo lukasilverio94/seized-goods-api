@@ -30,7 +30,6 @@ export const validateCreateSeizedGood = [
     .withMessage("Category ID must be an integer"),
   body("condition")
     .notEmpty()
-    .withMessage("Condition is required")
     .customSanitizer((value) => value.toUpperCase())
     .isIn(ALLOWED_CONDITIONS)
     .withMessage(`Condition must be one of: ${ALLOWED_CONDITIONS.join(", ")}`),

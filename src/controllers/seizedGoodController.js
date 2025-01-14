@@ -7,15 +7,34 @@ export const createSeizedGood = async (req, res, next) => {
   const { name, description, value, quantity, categoryId, condition } =
     req.body;
 
+  // Ensure all required fields are present
+  if (
+    !name ||
+    !description ||
+    !value ||
+    !quantity ||
+    !categoryId ||
+    !condition
+  ) {
+    return res.status(400).json({ error: "All fields are required" });
+  }
+
+  if (!condition) {
+    return next(new Error("Condition cannot be empty"));
+  }
+
+  const parsedQuantity = parseInt(quantity, 10);
+  const parsedValue = parseFloat(value);
+
   try {
     const seizedGood = await prisma.seizedGood.create({
       data: {
         name,
         description,
-        quantity,
-        availableQuantity: quantity,
-        value: parseFloat(value),
-        categoryId: parseInt(categoryId),
+        quantity: parsedQuantity,
+        availableQuantity: parsedQuantity,
+        value: parsedValue,
+        categoryId: parseInt(categoryId, 10),
         condition: condition,
       },
     });

@@ -73,9 +73,9 @@ router.post(
   "/",
   isAuthenticated,
   requireRole("ADMIN"),
+  uploadFiles.array("files", 5),
   validateCreateSeizedGood,
   handleValidationErrors,
-  uploadFiles.array("files", 5),
   createSeizedGood
 );
 
