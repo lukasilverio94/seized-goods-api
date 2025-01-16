@@ -1,6 +1,7 @@
 import AppError from "../utils/AppError.js";
 
-const errorHandler = (err, req, res) => {
+// eslint-disable-next-line no-unused-vars
+const errorHandler = (err, req, res, next) => {
   // Check if the error is an instance of AppError
   if (err instanceof AppError) {
     return res.status(err.status || 400).json({ message: err.message });

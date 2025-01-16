@@ -232,3 +232,89 @@ export const resetPassword = async (req, res, next) => {
     next(error);
   }
 };
+
+export const handleGetAllUsers = async (req, res, next) => {
+  try {
+    const users = await prisma.user.findMany({
+      select: {
+        id: true,
+        firstName: true,
+        lastName: true,
+        email: true,
+        role: true,
+        organizationId: true,
+        createdAt: true,
+        updatedAt: true,
+        isVerified: true,
+      },
+    });
+
+    if (!users) {
+      throw new AppError("Something went wrong fetching users", 400);
+    }
+
+    res.status(200).json(users);
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const handleDeleteUser = async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+
+    const user = await prisma.user.findUnique({
+      where: { id: userId },
+    });
+
+    if (!user) {
+      return res
+        .status(404)
+        .json({ error: `User with (ID) ${userId} not found!` });
+    }
+
+    await prisma.user.delete({
+      where: { id: userId },
+    });
+
+    res.status(204).json({ message: "User deleted successfully" });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const handleUpdateUser = async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+    const { firstName, lastName, email, isVerified, role, organizationId } =
+      req.body;
+
+    const updatedUser = await prisma.user.update({
+      where: { id: userId },
+      data: {
+        firstName,
+        lastName,
+        email,
+        isVerified,
+        role,
+        organizationId,
+      },
+    });
+
+    if (!updatedUser) {
+      throw new AppError(
+        "Something went wrong to update user: " + updatedUser.firstName,
+        400
+      );
+    }
+
+    res.status(201).json(updatedUser);
+  } catch (error) {
+    if (error.code === "P2025") {
+      return res.status(404).json({
+        error: `User with ID ${req.params.userId} not found`,
+      });
+    }
+    next(error);
+  }
+};

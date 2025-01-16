@@ -5,7 +5,12 @@ import {
   resendOtpCode,
   requestResetPassword,
   resetPassword,
+  handleGetAllUsers,
+  handleDeleteUser,
+  handleUpdateUser,
 } from "../controllers/userController.js";
+import isAuthenticated from "../middlewares/isAuthenticated.js";
+import requireRole from "../middlewares/requireRole.js";
 import { userValidationRules } from "../validators/user.js";
 import { handleValidationErrors } from "../middlewares/handleValidationErrors.js";
 import {
@@ -92,11 +97,29 @@ router.post(
   handleValidationErrors,
   requestResetPassword
 );
+
 router.post(
   "/reset-password",
   resetPasswordRules,
   handleValidationErrors,
   resetPassword
+);
+
+// Get All Users
+// @ private Admin required
+router.get("/", isAuthenticated, requireRole("ADMIN"), handleGetAllUsers);
+
+// Update User By Id
+// @ private Admin required
+router.put("/:userId", isAuthenticated, requireRole("ADMIN"), handleUpdateUser);
+
+// Delete User By Id
+// @ private Admin required
+router.delete(
+  "/:userId",
+  isAuthenticated,
+  requireRole("ADMIN"),
+  handleDeleteUser
 );
 
 export default router;
