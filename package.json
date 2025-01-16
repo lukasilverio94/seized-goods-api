@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node --watch src/index.js",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "seed": "node prisma/seeds/index.js"
+    "seed": "node prisma/seeds/index.js",
+    "lint": "npx eslint"
   },
   "keywords": [],
   "author": "",
@@ -32,5 +33,10 @@
     "redis": "^4.7.0",
     "swagger-jsdoc": "^6.2.8",
     "swagger-ui-express": "^5.0.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.18.0",
+    "eslint": "^9.18.0",
+    "globals": "^15.14.0"
   }
 }

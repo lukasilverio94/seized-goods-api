@@ -1,4 +1,4 @@
-import { body, param, query } from "express-validator";
+import { body, param } from "express-validator";
 
 // Validation for creating a social organization with a user
 export const validateCreateSocialOrganizationWithUser = [

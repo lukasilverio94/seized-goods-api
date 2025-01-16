@@ -18,6 +18,7 @@ export const contactUsByEmail = async (name, email, subject, message) => {
   try {
     await transporter.sendMail(mailOptions);
   } catch (error) {
+    console.error(error);
     throw new Error("Error sending contact message. Try again later");
   }
 };
@@ -54,7 +55,7 @@ If you did not request this, please ignore this email.`,
     await transporter.sendMail(mailOptions);
     console.log("Reset password link sent successfully");
   } catch (error) {
-    console.error("Error sending reset password email");
+    console.error(error);
     throw new Error("Error sending reset password email");
   }
 };

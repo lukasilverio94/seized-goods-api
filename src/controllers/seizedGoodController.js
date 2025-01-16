@@ -122,7 +122,7 @@ export const getAllSeizedGoods = async (req, res, next) => {
   }
 };
 
-export const getSeizedGoodById = async (req, res) => {
+export const getSeizedGoodById = async (req, res, next) => {
   const { id } = req.params;
   try {
     const seizedGood = await prisma.seizedGood.findUnique({
@@ -150,10 +150,18 @@ export const updateSeizedGood = async (req, res, next) => {
   try {
     const data = {};
 
-    if (name) data.name = name;
-    if (description) data.description = description;
-    if (quantity) data.quantity = quantity;
-    if (value) data.value = parseFloat(value);
+    if (name) {
+      data.name = name;
+    }
+    if (description) {
+      data.description = description;
+    }
+    if (quantity) {
+      data.quantity = quantity;
+    }
+    if (value) {
+      data.value = parseFloat(value);
+    }
 
     if (categoryId) {
       const category = await prisma.category.findUnique({

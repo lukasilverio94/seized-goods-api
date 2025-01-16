@@ -16,7 +16,7 @@ export const handlePostContactUs = async (req, res) => {
         "Contact sent successfully! We will return to you as soon as possible! Thank you for the message!",
     });
   } catch (error) {
-    console.error("Failed to send OTP email:", emailError);
+    console.error("Failed to send OTP email:", error);
     throw new AppError(
       "Could not send verification code to email. Try again later.",
       500
@@ -77,20 +77,18 @@ export const handleDeleteMessage = async (req, res, next) => {
   }
 };
 
-
-export const handleDeleteAllMessages = async(req, res, next) => {
-   try {
+export const handleDeleteAllMessages = async (req, res, next) => {
+  try {
     const messages = await prisma.contactMessage.findMany({});
 
-    if(!messages || messages.length === 0){
-      return res.status(404).json({message: "No messages to display"});
+    if (!messages || messages.length === 0) {
+      return res.status(404).json({ message: "No messages to display" });
     }
 
     await prisma.contactMessage.deleteMany({});
-  
-    res.status(200).json({message: "All contact messages has been deleted"});
 
-  } catch(error){
+    res.status(200).json({ message: "All contact messages has been deleted" });
+  } catch (error) {
     next(error);
   }
-}
+};

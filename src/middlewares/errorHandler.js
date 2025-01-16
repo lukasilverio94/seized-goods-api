@@ -1,6 +1,6 @@
 import AppError from "../utils/AppError.js";
 
-const errorHandler = (err, req, res, next) => {
+const errorHandler = (err, req, res) => {
   // Check if the error is an instance of AppError
   if (err instanceof AppError) {
     return res.status(err.status || 400).json({ message: err.message });
