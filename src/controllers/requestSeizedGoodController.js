@@ -1,4 +1,5 @@
 import prisma from "../../prisma/client.js";
+import { broadcastRequestsToAdmin } from "../events/serverSentEvents.js";
 import AppError from "../utils/AppError.js";
 
 export const requestSeizedGoodItem = async (req, res, next) => {
@@ -85,6 +86,17 @@ export const requestSeizedGoodItem = async (req, res, next) => {
         },
       });
 
+      const notification = {
+        type: "new_request_item",
+        requestId: request.id,
+        organizationId: request.organizationId,
+        seizedGoodId: request.seizedGoodId,
+        quantity: request.quantity,
+        purpose: request.purpose,
+        impactEstimate: request.impactEstimate,
+      };
+
+      broadcastRequestsToAdmin(notification);
       return request;
     });
 
@@ -106,14 +118,14 @@ export const getAllGoodsRequests = async (req, res, next) => {
       include: {
         organization: {
           select: {
-            name: true, 
+            name: true,
             contactPerson: true,
           },
         },
         seizedGood: {
           select: {
             name: true,
-            description: true, 
+            description: true,
           },
         },
       },
@@ -128,7 +140,6 @@ export const getAllGoodsRequests = async (req, res, next) => {
     next(error);
   }
 };
-
 
 export const getGoodRequestById = async (req, res, next) => {
   try {

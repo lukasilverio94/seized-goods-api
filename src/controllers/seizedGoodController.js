@@ -52,7 +52,7 @@ export const createSeizedGood = async (req, res, next) => {
 
     // Create notification payload
     const notification = {
-      type: "new",
+      type: "new_item_of_interest",
       id: seizedGood.id,
       name: seizedGood.name,
       value: seizedGood.value,

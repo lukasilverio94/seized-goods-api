@@ -1,22 +1,35 @@
-// SSE Logic to send notifications to client (frontend)
 export let sseClients = [];
 
-export const addClient = (res, categories) => {
-  const validCategories = Array.isArray(categories) ? categories : [];
-  sseClients.push({ res, categories: validCategories });
+// Add a client with more detailed subscription options
+export const addClient = (res, subscription) => {
+  const defaultSubscription = { categories: [], organizationId: null }; // Default structure
+  const validSubscription = { ...defaultSubscription, ...subscription }; // Merge user input with default
+
+  sseClients.push({ res, subscription: validSubscription });
   console.log("New client added, total clients:", sseClients.length);
 
-  // remove client on connection close
+  // Remove client on connection close
   res.on("close", () => {
     sseClients = sseClients.filter((client) => client.res !== res);
     console.log("Client disconnected, total clients:", sseClients.length);
   });
 };
 
-export const broadcastToClients = (message, categoryId) => {
+// Broadcast notifications about items
+export const broadcastItemsToOrganizations = (message, categoryId) => {
   const formattedMessage = `data: ${JSON.stringify(message)}\n\n`;
-  sseClients.forEach(({ res, categories }) => {
-    if (Array.isArray(categories) && categories.includes(categoryId)) {
+  sseClients.forEach(({ res, subscription }) => {
+    if (subscription.categories.includes(categoryId)) {
+      res.write(formattedMessage);
+    }
+  });
+};
+
+// Broadcast notifications about requests to admins
+export const broadcastRequestsToAdmin = (message) => {
+  const formattedMessage = `data: ${JSON.stringify(message)}\n\n`;
+  sseClients.forEach(({ res, subscription }) => {
+    if (subscription.role === "admin") {
       res.write(formattedMessage);
     }
   });
