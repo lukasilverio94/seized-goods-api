@@ -103,9 +103,23 @@ export const getAllGoodsRequests = async (req, res, next) => {
       orderBy: {
         createdAt: "desc",
       },
+      include: {
+        organization: {
+          select: {
+            name: true, 
+            contactPerson: true,
+          },
+        },
+        seizedGood: {
+          select: {
+            name: true,
+            description: true, 
+          },
+        },
+      },
     });
 
-    if (!requests) {
+    if (!requests || requests.length === 0) {
       throw new AppError("No requests found", 404);
     }
 
@@ -114,6 +128,7 @@ export const getAllGoodsRequests = async (req, res, next) => {
     next(error);
   }
 };
+
 
 export const getGoodRequestById = async (req, res, next) => {
   try {

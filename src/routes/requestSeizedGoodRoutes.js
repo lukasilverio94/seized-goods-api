@@ -19,7 +19,7 @@ import { handleValidationErrors } from "../middlewares/handleValidationErrors.js
 router.post("/", isAuthenticated, requestSeizedGoodItem);
 
 // GET - Get all requests
-router.get("/", isAuthenticated, getAllGoodsRequests);
+router.get("/", isAuthenticated, requireRole("ADMIN"),getAllGoodsRequests);
 
 // GET - Get requests for the logged-in user (no ID needed)
 router.get("/me", isAuthenticated, getUserRequests);

@@ -1,5 +1,8 @@
 import prisma from "../../prisma/client.js";
-import { broadcastToClients, sseClients } from "../events/serverSentEvents.js";
+import {
+  broadcastItemsToOrganizations,
+  sseClients,
+} from "../events/serverSentEvents.js";
 import AppError from "../utils/AppError.js";
 import { uploadImagesToCloudinary } from "../utils/uploadToCloudinary.js";
 
@@ -60,7 +63,7 @@ export const createSeizedGood = async (req, res, next) => {
     };
 
     // Notify NGOs clients for the corresponding category by id
-    broadcastToClients(notification, parseInt(categoryId));
+    broadcastItemsToOrganizations(notification, parseInt(categoryId));
 
     // Handle images if provided
     if (req.files && req.files.length > 0) {
