@@ -1,101 +1,25 @@
 import prisma from "../../prisma/client.js";
-import {
-  broadcastItemsToOrganizations,
-  sseClients,
-} from "../events/serverSentEvents.js";
+import { sseClients } from "../events/serverSentEvents.js";
 import AppError from "../utils/AppError.js";
-import { uploadImagesToCloudinary } from "../utils/uploadToCloudinary.js";
+import * as seizedGoodService from "../services/seizedGoodService.js";
 
-export const createSeizedGood = async (req, res, next) => {
-  const { name, description, value, quantity, categoryId, condition } =
-    req.body;
-
-  // Ensure all required fields are present
-  if (
-    !name ||
-    !description ||
-    !value ||
-    !quantity ||
-    !categoryId ||
-    !condition
-  ) {
-    return res.status(400).json({ error: "All fields are required" });
-  }
-
-  if (!condition) {
-    return next(new Error("Condition cannot be empty"));
-  }
-
-  const parsedQuantity = parseInt(quantity, 10);
-  const parsedValue = parseFloat(value);
-
+export const handleRegisterItem = async (req, res, next) => {
+  const seizedGood = await seizedGoodService.registerSeizedGood(req.body);
   try {
-    const seizedGood = await prisma.seizedGood.create({
-      data: {
-        name,
-        description,
-        quantity: parsedQuantity,
-        availableQuantity: parsedQuantity,
-        value: parsedValue,
-        categoryId: parseInt(categoryId, 10),
-        condition: condition,
-      },
-    });
-
-    const category = await prisma.category.findUnique({
-      where: { id: parseInt(categoryId) },
-    });
-
-    if (!category) {
-      throw new AppError("Invalid Category ID provided", 404);
-    }
-
-    // Create notification payload
-    const notification = {
-      type: "new_item_of_interest",
-      id: seizedGood.id,
-      name: seizedGood.name,
-      value: seizedGood.value,
-      quantity: seizedGood.availableQuantity,
-      description: seizedGood.description,
-      category: category.name,
-      condition: seizedGood.condition,
-    };
-
-    // Notify NGOs clients for the corresponding category by id
-    broadcastItemsToOrganizations(notification, parseInt(categoryId));
-
-    // Handle images if provided
-    if (req.files && req.files.length > 0) {
-      const imageUrls = await uploadImagesToCloudinary(req.files);
-
-      const imageSavePromises = imageUrls.map((url) =>
-        prisma.image.create({
-          data: {
-            url,
-            altText: "Seized Good Image",
-            seizedGoodId: seizedGood.id,
-          },
-        })
-      );
-
-      await Promise.all(imageSavePromises);
-    }
-
     res.status(201).json(seizedGood);
   } catch (error) {
     next(error);
   }
 };
 
-export const getAllSeizedGoods = async (req, res, next) => {
+export const handleGetAllSeizedGoods = async (req, res, next) => {
   try {
     const { categoryId, searchTerm, page = 1, limit } = req.query;
 
     const filters = {};
 
     if (categoryId) {
-      filters.categoryId = parseInt(categoryId);
+      filters.categoryId = parseInt(categoryId, 10);
     }
     if (searchTerm) {
       filters.name = {
@@ -103,21 +27,11 @@ export const getAllSeizedGoods = async (req, res, next) => {
         mode: "insensitive",
       };
     }
-
-    const seizedGoods = await prisma.seizedGood.findMany({
-      where: filters,
-      include: {
-        images: true,
-        category: true,
-      },
-      orderBy: {
-        createdAt: "desc",
-      },
-      ...(page && page > 1
-        ? { skip: (page - 1) * (limit ? parseInt(limit) : 10) }
-        : {}), // Include `skip` only if it's valid
-      ...(limit ? { take: parseInt(limit) } : {}),
-    });
+    const seizedGoods = await seizedGoodService.getAllSeizedGoods(
+      filters,
+      page,
+      limit
+    );
 
     return res.status(200).json(seizedGoods);
   } catch (error) {
@@ -125,7 +39,7 @@ export const getAllSeizedGoods = async (req, res, next) => {
   }
 };
 
-export const getSeizedGoodById = async (req, res, next) => {
+export const handleGetSeizedGoodById = async (req, res, next) => {
   const { id } = req.params;
   try {
     const seizedGood = await prisma.seizedGood.findUnique({
@@ -146,7 +60,7 @@ export const getSeizedGoodById = async (req, res, next) => {
   }
 };
 
-export const updateSeizedGood = async (req, res, next) => {
+export const handleUpdateSeizedGood = async (req, res, next) => {
   const { id } = req.params;
   const { name, description, value, quantity, categoryId } = req.body;
 
@@ -192,7 +106,7 @@ export const updateSeizedGood = async (req, res, next) => {
   }
 };
 
-export const deleteSeizedGood = async (req, res, next) => {
+export const handleDeleteSeizedGood = async (req, res, next) => {
   const { id } = req.params;
 
   try {
