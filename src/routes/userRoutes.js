@@ -1,14 +1,16 @@
 import express from "express";
 import {
-  registerUser,
-  verifyOtpUser,
-  resendOtpCode,
+  handleRegisterUser,
   requestResetPassword,
   resetPassword,
   handleGetAllUsers,
   handleDeleteUser,
   handleUpdateUser,
 } from "../controllers/userController.js";
+import {
+  handleVerifyOtpUser,
+  handleResendOtpCode,
+} from "../controllers/otpController.js";
 import isAuthenticated from "../middlewares/isAuthenticated.js";
 import requireRole from "../middlewares/requireRole.js";
 import { userValidationRules } from "../validators/user.js";
@@ -51,7 +53,7 @@ router.post(
   "/register",
   userValidationRules,
   handleValidationErrors,
-  registerUser
+  handleRegisterUser
 );
 
 /**
@@ -81,14 +83,14 @@ router.post(
   "/verify-otp",
   validateOtpCodeRules,
   handleValidationErrors,
-  verifyOtpUser
+  handleVerifyOtpUser
 );
 
 router.post(
   "/resend-otp",
   resendOtpCodeRules,
   handleValidationErrors,
-  resendOtpCode
+  handleResendOtpCode
 );
 
 router.post(
