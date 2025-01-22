@@ -51,6 +51,7 @@ export const registerSeizedGood = async (seizedGoodData, files) => {
 
   if (files && files.length > 0) {
     const imageUrls = await uploadImagesToCloudinary(files);
+    console.log("imageUrls:", imageUrls);
     await Promise.all(
       imageUrls.map((url) =>
         seizedGoodRepository.saveImage({
