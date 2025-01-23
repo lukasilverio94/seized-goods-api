@@ -4,11 +4,11 @@ import AppError from "../utils/AppError.js";
 import * as seizedGoodService from "../services/seizedGoodService.js";
 
 export const handleRegisterItem = async (req, res, next) => {
-  const seizedGood = await seizedGoodService.registerSeizedGood(
-    req.body,
-    req.files
-  );
   try {
+    const seizedGood = await seizedGoodService.registerSeizedGood(
+      req.body,
+      req.files
+    );
     res.status(201).json(seizedGood);
   } catch (error) {
     next(error);

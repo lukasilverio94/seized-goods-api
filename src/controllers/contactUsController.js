@@ -1,24 +1,18 @@
 import AppError from "../utils/AppError.js";
-import { contactUsByEmail } from "../services/EmailService.js";
-import prisma from "../../prisma/client.js";
+import * as contactUsService from "../services/contactUsService.js";
+import { listAllContactMessages } from "../repositories/contactUsRepository.js";
 
 export const handlePostContactUs = async (req, res) => {
-  const { userName, userEmail, subject, message } = req.body;
-
   try {
-    await prisma.contactMessage.create({
-      data: { userName, userEmail, subject, message },
-    });
-
-    await contactUsByEmail(userName, userEmail, subject, message);
+    await contactUsService.contactUsNewMessage(req.body);
     res.json({
       message:
         "Contact sent successfully! We will return to you as soon as possible! Thank you for the message!",
     });
   } catch (error) {
-    console.error("Failed to send OTP email:", error);
     throw new AppError(
-      "Could not send verification code to email. Try again later.",
+      "Could not send verification code to email:",
+      error,
       500
     );
   }
@@ -26,68 +20,37 @@ export const handlePostContactUs = async (req, res) => {
 
 export const handleGetAllMessages = async (req, res, next) => {
   try {
-    const messages = await prisma.contactMessage.findMany();
+    const messages = await listAllContactMessages();
     res.status(200).json(messages);
   } catch (error) {
-    console.log(error);
     next(error);
   }
 };
 
 export const handleGetMessageById = async (req, res, next) => {
   try {
-    const { msgId } = req.params;
-    const message = await prisma.contactMessage.findUnique({
-      where: { id: toString(msgId) },
-    });
-
-    if (!message) {
-      throw new AppError("Message not found", 404);
-    }
-
+    const message = await contactUsService.selectMessageById(req.params.msgId);
     res.status(200).json(message);
   } catch (error) {
+    console.log(error);
     next(error);
   }
 };
 
 export const handleDeleteMessage = async (req, res, next) => {
-  const { msgId } = req.params;
-
-  console.log("msgId from request params:", msgId);
-
   try {
-    const message = await prisma.contactMessage.findUnique({
-      where: { id: msgId },
-    });
-
-    console.log("Message:", message);
-
-    if (!message) {
-      return res.status(404).json({ error: "Message not found!" });
-    }
-
-    await prisma.contactMessage.delete({
-      where: { id: msgId },
-    });
-
-    res.status(200).json({ message: "Message deleted successfully" });
+    const response = await contactUsService.deleteMessageById(req.params.msgId);
+    res.status(200).json(response);
   } catch (error) {
+    console.error("Error deleting message:", error);
     next(error);
   }
 };
 
 export const handleDeleteAllMessages = async (req, res, next) => {
   try {
-    const messages = await prisma.contactMessage.findMany({});
-
-    if (!messages || messages.length === 0) {
-      return res.status(404).json({ message: "No messages to display" });
-    }
-
-    await prisma.contactMessage.deleteMany({});
-
-    res.status(200).json({ message: "All contact messages has been deleted" });
+    const response = await contactUsService.deleteAllMessages();
+    res.status(200).json(response);
   } catch (error) {
     next(error);
   }
