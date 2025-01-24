@@ -1,11 +1,11 @@
 import express from "express";
 import {
-  createSocialOrganizationWithUser,
-  createSocialOrganization,
-  deleteSocialOrganization,
-  getAllSocialOrganizations,
-  getSocialOrganizationById,
-  updateSocialOrganization,
+  handleCreateOrganizationWithUser,
+  handleCreateOrganization,
+  handleGetAllOrganizations,
+  handleGetOrganizationById,
+  handleUpdateOrganization,
+  handleDeleteOrganization,
 } from "../controllers/socialOrganizationController.js";
 
 import {
@@ -88,7 +88,7 @@ router.post(
   "/register",
   validateCreateSocialOrganizationWithUser,
   handleValidationErrors,
-  createSocialOrganizationWithUser
+  handleCreateOrganizationWithUser
 );
 
 /**
@@ -149,7 +149,7 @@ router.post(
   requireRole("ADMIN"),
   validateCreateSocialOrganization,
   handleValidationErrors,
-  createSocialOrganization
+  handleCreateOrganization
 );
 
 /**
@@ -165,7 +165,7 @@ router.post(
  *           application/json
  *
  */
-router.get("/", getAllSocialOrganizations);
+router.get("/", handleGetAllOrganizations);
 
 /**
  * @swagger
@@ -250,7 +250,7 @@ router.get(
   "/:id",
   validateGetSocialOrganizationById,
   handleValidationErrors,
-  getSocialOrganizationById
+  handleGetOrganizationById
 );
 
 /**
@@ -334,7 +334,7 @@ router.put(
   isAuthenticated,
   validateUpdateSocialOrganization,
   handleValidationErrors,
-  updateSocialOrganization
+  handleUpdateOrganization
 );
 
 /**
@@ -365,7 +365,7 @@ router.delete(
   requireRole("ADMIN"),
   validateDeleteSocialOrganization,
   handleValidationErrors,
-  deleteSocialOrganization
+  handleDeleteOrganization
 );
 
 export default router;

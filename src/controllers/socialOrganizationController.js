@@ -1,85 +1,10 @@
-import prisma from "../../prisma/client.js";
-import AppError from "../utils/AppError.js";
-import bcrypt from "bcrypt";
+import * as orgService from "../services/socialOrganizationService.js";
 
-export const createSocialOrganizationWithUser = async (req, res, next) => {
-  const {
-    name,
-    contactPerson,
-    email,
-    firstName,
-    lastName,
-    phone,
-    streetName,
-    number,
-    city,
-    country,
-    zipCode,
-    qualifications,
-    categories,
-    password,
-  } = req.body;
-
+export const handleCreateOrganizationWithUser = async (req, res, next) => {
   try {
-    const existingOrganization = await prisma.socialOrganization.findUnique({
-      where: { email },
-    });
-
-    if (existingOrganization) {
-      throw new AppError(
-        "This email is already taken for an organization",
-        403
-      );
-    }
-
-    const hashedPassword = await bcrypt.hash(password, 10);
-
-    // Transactions
-    const newOrganization = await prisma.$transaction(async (prisma) => {
-      const organization = await prisma.socialOrganization.create({
-        data: {
-          name,
-          contactPerson,
-          email,
-          phone,
-          streetName,
-          number,
-          city,
-          country,
-          zipCode,
-          qualifications,
-          categories: {
-            create: categories.map((categoryId) => ({
-              categoryId: parseInt(categoryId),
-            })),
-          },
-        },
-        include: {
-          categories: {
-            select: {
-              id: true,
-              categoryId: true,
-              createdAt: true,
-              updatedAt: true,
-            },
-          },
-        },
-      });
-
-      const user = await prisma.user.create({
-        data: {
-          email,
-          firstName,
-          lastName,
-          password: hashedPassword,
-          role: "USER",
-          organizationId: organization.id,
-        },
-      });
-
-      return { organization, user };
-    });
-
+    const newOrganization = await orgService.createOrganizationWithUser(
+      req.body
+    );
     res.status(201).json({
       message: "Registration successful. Your account is pending approval.",
       organization: newOrganization.organization,
@@ -93,114 +18,48 @@ export const createSocialOrganizationWithUser = async (req, res, next) => {
   }
 };
 
-export const createSocialOrganization = async (req, res, next) => {
-  const {
-    name,
-    contactPerson,
-    email,
-    phone,
-    streetName,
-    number,
-    city,
-    country,
-    zipCode,
-    qualifications,
-    categories,
-  } = req.body;
-
-  if (!name || !email || !categories || categories.length === 0) {
-    return next(
-      new AppError("Name, email, and at least one category are required", 400)
-    );
-  }
-
+export const handleCreateOrganization = async (req, res, next) => {
   try {
-    const newOrganization = await prisma.socialOrganization.create({
-      data: {
-        name,
-        contactPerson,
-        email,
-        phone,
-        streetName,
-        number,
-        city,
-        country,
-        zipCode,
-        qualifications,
-        categories: {
-          create: categories.map((categoryId) => ({
-            categoryId: parseInt(categoryId),
-          })),
-        },
-      },
-      include: {
-        categories: true,
-      },
-    });
-
+    const newOrganization = await orgService.createOrganization(req.body);
     res.status(201).json(newOrganization);
   } catch (error) {
     next(error);
   }
 };
 
-export const getAllSocialOrganizations = async (req, res, next) => {
+export const handleGetAllOrganizations = async (req, res, next) => {
   try {
-    const socialOrganizations = await prisma.socialOrganization.findMany();
-    res.status(201).json(socialOrganizations);
-  } catch (error) {
-    res.status(404).json({ message: "Problem to find organizations" });
-    next(error);
-  }
-};
-
-export const getSocialOrganizationById = async (req, res, next) => {
-  const { id } = req.params;
-  try {
-    const socialOrganization = await prisma.socialOrganization.findUnique({
-      where: {
-        id: parseInt(id),
-      },
-    });
-    res.status(201).json(socialOrganization);
+    const organizations = await orgService.getAllOrganizations();
+    res.status(200).json(organizations);
   } catch (error) {
     next(error);
   }
 };
 
-export const updateSocialOrganization = async (req, res, next) => {
-  const { id } = req.params;
-  const { name, contactPerson, email, phone, address, qualifications } =
-    req.body;
+export const handleGetOrganizationById = async (req, res, next) => {
   try {
-    const updatedSocialOrganization = await prisma.socialOrganization.update({
-      where: {
-        id: parseInt(id),
-      },
-      data: { name, contactPerson, email, phone, address, qualifications },
-    });
-
-    res.status(201).json(updatedSocialOrganization);
+    const organization = await orgService.getOrganizationById(req.params.id);
+    res.status(200).json(organization);
   } catch (error) {
     next(error);
   }
 };
 
-export const deleteSocialOrganization = async (req, res, next) => {
-  const { id } = req.params;
-
+export const handleUpdateOrganization = async (req, res, next) => {
   try {
-    const organization = await prisma.socialOrganization.findUnique({
-      where: { id: parseInt(id) },
-    });
+    const updatedOrganization = await orgService.updateOrganization(
+      req.params.id,
+      req.body
+    );
+    res.status(200).json(updatedOrganization);
+  } catch (error) {
+    next(error);
+  }
+};
 
-    if (!organization) {
-      return res
-        .status(404)
-        .json({ message: "Social Organization not found." });
-    }
-
-    await prisma.socialOrganization.delete({ where: { id: parseInt(id) } });
+export const handleDeleteOrganization = async (req, res, next) => {
+  try {
+    await orgService.deleteOrganization(req.params.id);
     res.status(204).end();
   } catch (error) {
     next(error);
