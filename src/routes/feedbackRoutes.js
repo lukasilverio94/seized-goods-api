@@ -1,10 +1,10 @@
 import { Router } from "express";
 import {
-  addFeedback,
-  deleteFeedback,
-  getAllFeedbacks,
-  getFeedback,
-  updateFeedback,
+  handlePostFeedback,
+  handleDeleteFeedback,
+  handleGetAllFeedbacks,
+  handleGetFeedback,
+  handleUpdateFeedback,
 } from "../controllers/feedbackControllers.js";
 import { validateCreateFeedback } from "../validators/feedbacks.js";
 import { handleValidationErrors } from "../middlewares/handleValidationErrors.js";
@@ -18,26 +18,26 @@ router.post(
   isAuthenticated,
   validateCreateFeedback,
   handleValidationErrors,
-  addFeedback
+  handlePostFeedback
 );
 
-router.get("/", getAllFeedbacks);
+router.get("/", handleGetAllFeedbacks);
 
-router.get("/:feedbackId", getFeedback);
+router.get("/:fbId", handleGetFeedback);
 
 router.put(
-  "/:feedbackId",
+  "/:fbId",
   isAuthenticated,
   requireRole("ADMIN"),
   validateCreateFeedback,
   handleValidationErrors,
-  updateFeedback
+  handleUpdateFeedback
 );
 
 router.delete(
-  "/:feedbackId",
+  "/:fbId",
   isAuthenticated,
   requireRole("ADMIN"),
-  deleteFeedback
+  handleDeleteFeedback
 );
 export default router;

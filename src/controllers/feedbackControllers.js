@@ -1,113 +1,48 @@
-import prisma from "../../prisma/client.js";
-import AppError from "../utils/AppError.js";
+import * as feedbackService from "../services/feedbackService.js";
 
-export const addFeedback = async (req, res, next) => {
+export const handlePostFeedback = async (req, res, next) => {
   try {
-    const { organizationId, seizedGoodId, testimonial, impactStats } = req.body;
-
-    const organization = await prisma.socialOrganization.findUnique({
-      where: { id: organizationId },
-    });
-
-    if (!organization) {
-      throw new AppError("Organization not found", 404);
-    }
-
-    const seizedGood = await prisma.seizedGood.findUnique({
-      where: { id: seizedGoodId },
-    });
-
-    if (!seizedGood) {
-      throw new AppError("Seized good not found", 404);
-    }
-
-    const feedback = await prisma.feedback.create({
-      data: {
-        organizationId,
-        seizedGoodId,
-        testimonial,
-        impactStats,
-      },
-    });
-
+    const feedback = await feedbackService.addFeedback(req.body);
     res.status(200).json(feedback);
   } catch (error) {
     next(error);
   }
 };
 
-export const getAllFeedbacks = async (req, res, next) => {
+export const handleGetAllFeedbacks = async (req, res, next) => {
   try {
-    const feedbacks = await prisma.feedback.findMany();
+    const feedbacks = await feedbackService.getAllFeedbacks();
     res.status(200).json(feedbacks);
   } catch (error) {
     next(error);
   }
 };
 
-export const getFeedback = async (req, res, next) => {
+export const handleGetFeedback = async (req, res, next) => {
   try {
-    const { feedbackId } = req.params;
-    const feedback = await prisma.feedback.findUnique({
-      where: { id: parseInt(feedbackId) },
-    });
-
-    if (!feedback) {
-      throw new AppError("Feedback not found", 404);
-    }
-
+    const feedback = await feedbackService.getFeedbackById(req.params.fbId);
     res.status(200).json(feedback);
   } catch (error) {
     next(error);
   }
 };
 
-export const updateFeedback = async (req, res, next) => {
+export const handleUpdateFeedback = async (req, res, next) => {
   try {
-    const { feedbackId } = req.params;
-    const { organizationId, seizedGoodId, testimonial, impactStats } = req.body;
-
-    const organization = await prisma.socialOrganization.findUnique({
-      where: { id: organizationId },
-    });
-
-    if (!organization) {
-      throw new AppError("Organization not found", 404);
-    }
-
-    const seizedGood = await prisma.seizedGood.findUnique({
-      where: { id: seizedGoodId },
-    });
-
-    if (!seizedGood) {
-      throw new AppError("Seized good not found", 404);
-    }
-
-    const updatedFeedback = await prisma.feedback.update({
-      where: { id: parseInt(feedbackId) },
-      data: {
-        organizationId,
-        seizedGoodId,
-        testimonial,
-        impactStats,
-      },
-    });
-
+    const updatedFeedback = await feedbackService.updateFeedback(
+      req.params.fbId,
+      req.body
+    );
     res.status(200).json(updatedFeedback);
   } catch (error) {
     next(error);
   }
 };
 
-export const deleteFeedback = async (req, res, next) => {
+export const handleDeleteFeedback = async (req, res, next) => {
   try {
-    const { feedbackId } = req.params;
-
-    await prisma.feedback.delete({
-      where: { id: parseInt(feedbackId) },
-    });
-
-    res.status(204).json({ message: "Feedback deleted successfully" });
+    const response = await feedbackService.deleteFeedback(req.params.fbId);
+    res.status(204).json(response);
   } catch (error) {
     next(error);
   }
