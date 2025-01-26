@@ -1,7 +1,9 @@
 import prisma from "../../prisma/client.js";
 import { sseClients } from "../events/serverSentEvents.js";
+import { uploadImagesToCloudinary } from "../utils/uploadToCloudinary.js";
 import AppError from "../utils/AppError.js";
 import * as seizedGoodService from "../services/seizedGoodService.js";
+import * as seizedGoodRepository from "../repositories/seizedGoodRepository.js";
 
 export const handleRegisterItem = async (req, res, next) => {
   try {
@@ -66,6 +68,7 @@ export const handleGetSeizedGoodById = async (req, res, next) => {
 export const handleUpdateSeizedGood = async (req, res, next) => {
   const { id } = req.params;
   const { name, description, value, quantity, categoryId } = req.body;
+  const files = req.files;
 
   try {
     const data = {};
@@ -77,7 +80,7 @@ export const handleUpdateSeizedGood = async (req, res, next) => {
       data.description = description;
     }
     if (quantity) {
-      data.quantity = quantity;
+      data.quantity = parseInt(quantity, 10);
     }
     if (value) {
       data.value = parseFloat(value);
@@ -93,7 +96,7 @@ export const handleUpdateSeizedGood = async (req, res, next) => {
       }
       data.categoryId = parseInt(categoryId);
     }
-
+    
     const updatedSeizedGood = await prisma.seizedGood.update({
       where: { id: parseInt(id) },
       include: {
@@ -102,6 +105,20 @@ export const handleUpdateSeizedGood = async (req, res, next) => {
       },
       data,
     });
+
+     if (files && files.length > 0) {
+        const imageUrls = await uploadImagesToCloudinary(files);
+        await Promise.all(
+        imageUrls.map((url) =>
+        seizedGoodRepository.saveImage({
+          url,
+          altText: "Seized Good Image",
+          seizedGoodId: updatedSeizedGood.id,
+        })
+      )
+    );
+  }
+
 
     res.status(200).json(updatedSeizedGood);
   } catch (error) {

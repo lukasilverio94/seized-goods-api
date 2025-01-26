@@ -191,6 +191,7 @@ router.put(
   "/:id",
   isAuthenticated,
   requireRole("ADMIN"),
+  uploadFiles.array("files", 5),
   validateUpdateSeizedGood,
   handleValidationErrors,
   handleUpdateSeizedGood

@@ -88,7 +88,10 @@ export const createOrganization = async (data) => {
   const existingOrganization = await orgRepo.findOrganizationByEmail(email);
 
   if (existingOrganization) {
-    throw new AppError("Please use another email. This is already taken", 400);
+    throw new AppError(
+      "The email is already in use by another organization",
+      409
+    );
   }
 
   return orgRepo.createOrganization({
@@ -123,7 +126,20 @@ export const getOrganizationById = async (id) => {
 };
 
 export const updateOrganization = async (id, data) => {
-  return orgRepo.updateOrganizationById(id, data);
+  const { categories, ...otherData } = data;
+
+  const updateData = {
+    ...otherData,
+    ...(categories && {
+      categories: {
+        connect: categories.map((categoryId) => ({
+          categoryId: parseInt(categoryId), // Only categoryId is required
+        })),
+      },
+    }),
+  };
+
+  return orgRepo.updateOrganizationById(id, updateData);
 };
 
 export const deleteOrganization = async (id) => {
