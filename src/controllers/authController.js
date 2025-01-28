@@ -1,74 +1,22 @@
-import prisma from "../../prisma/client.js";
-import bcrypt from "bcrypt";
-import { randomUUID } from "node:crypto";
-import AppError from "../utils/AppError.js";
-import { generateTokens } from "../utils/jwt.js";
-import { addRefreshTokenToWhiteList } from "../services/refreshTokens.js";
 import { setAuthCookies, clearAuthCookies } from "../utils/setAuthCookies.js";
+import { loginUserService } from "../services/authService.js";
 
-export const loginUser = async (req, res, next) => {
+export const handleUserLogin = async (req, res, next) => {
   try {
-    const { email, password } = req.body;
-
-    if (!email || !password) {
-      throw new AppError("Email and password are required.", 400);
-    }
-
-    const user = await prisma.user.findUnique({
-      where: { email },
-      select: {
-        id: true,
-        firstName: true,
-        lastName: true,
-        email: true,
-        password: true,
-        role: true,
-        organizationId: true,
-        isVerified: true,
-      },
-    });
-    if (!user) {
-      throw new AppError("Invalid credentials", 401);
-    }
-
-    if (!user.isVerified) {
-      throw new AppError(
-        "Your account is still not verified, please verify with the OTP code sent to your email or request new OTP code.",
-        400
-      );
-    }
-
-    const isValidPassword = await bcrypt.compare(password, user.password);
-    if (!isValidPassword) {
-      throw new AppError("Invalid login credentials", 403);
-    }
-
-    // Generate tokens and store refresh token in whitelist
-    const jti = randomUUID();
-    const { accessToken, refreshToken } = generateTokens(
-      {
-        id: user.id,
-        firstName: user.firstName,
-        lastName: user.lastName,
-        email: user.email,
-        organizationId: user.organizationId,
-        role: user.role,
-      },
-      jti
+    const { accessToken, refreshToken, user } = await loginUserService(
+      req.body
     );
-    await addRefreshTokenToWhiteList({ jti, refreshToken, userId: user.id });
 
     setAuthCookies(res, accessToken, refreshToken);
-
     res
       .status(200)
-      .json({ message: "Login successful", accessToken, refreshToken });
+      .json({ message: "Login successful", accessToken, refreshToken, user });
   } catch (error) {
     next(error);
   }
 };
 
-export const logoutUser = async (req, res, next) => {
+export const handleUserLogout = async (req, res, next) => {
   try {
     clearAuthCookies(res);
     res.status(200).json({ message: "Logout successful" });

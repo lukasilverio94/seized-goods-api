@@ -1,10 +1,10 @@
 import express from "express";
 import {
-  createSeizedGood,
-  getAllSeizedGoods,
-  getSeizedGoodById,
-  updateSeizedGood,
-  deleteSeizedGood,
+  handleRegisterItem,
+  handleGetAllSeizedGoods,
+  handleGetSeizedGoodById,
+  handleUpdateSeizedGood,
+  handleDeleteSeizedGood,
 } from "../controllers/seizedGoodController.js";
 import {
   validateCreateSeizedGood,
@@ -76,7 +76,7 @@ router.post(
   uploadFiles.array("files", 5),
   validateCreateSeizedGood,
   handleValidationErrors,
-  createSeizedGood
+  handleRegisterItem
 );
 
 /**
@@ -105,7 +105,7 @@ router.get(
   "/",
   validateGetAllSeizedGoods,
   handleValidationErrors,
-  getAllSeizedGoods
+  handleGetAllSeizedGoods
 );
 
 /**
@@ -135,7 +135,7 @@ router.get(
   "/:id",
   validateGetSeizedGoodById,
   handleValidationErrors,
-  getSeizedGoodById
+  handleGetSeizedGoodById
 );
 
 /**
@@ -191,9 +191,10 @@ router.put(
   "/:id",
   isAuthenticated,
   requireRole("ADMIN"),
+  uploadFiles.array("files", 5),
   validateUpdateSeizedGood,
   handleValidationErrors,
-  updateSeizedGood
+  handleUpdateSeizedGood
 );
 
 /**
@@ -225,7 +226,7 @@ router.delete(
   requireRole("ADMIN"),
   validateDeleteSeizedGood,
   handleValidationErrors,
-  deleteSeizedGood
+  handleDeleteSeizedGood
 );
 
 export default router;

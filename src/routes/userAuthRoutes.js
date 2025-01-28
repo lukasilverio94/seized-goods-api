@@ -1,5 +1,8 @@
 import express from "express";
-import { loginUser, logoutUser } from "../controllers/authController.js";
+import {
+  handleUserLogin,
+  handleUserLogout,
+} from "../controllers/authController.js";
 import isAuthenticated from "../middlewares/isAuthenticated.js";
 
 const router = express.Router();
@@ -29,7 +32,7 @@ const router = express.Router();
  *                     type: string
  *                     description: User's Password (min 8 characters).
  */
-router.post("/login", loginUser);
+router.post("/login", handleUserLogin);
 
 /**
  * @swagger
@@ -53,6 +56,6 @@ router.get("/me", isAuthenticated, (req, res) => {
     email: req.user.email,
   });
 });
-router.post("/logout", logoutUser);
+router.post("/logout", handleUserLogout);
 
 export default router;

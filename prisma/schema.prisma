@@ -74,8 +74,8 @@ model SeizedGood {
   categoryId        Int
   category          Category      @relation(fields: [categoryId], references: [id])
   allocations       Allocation[]
-  requests          Request[] // Requests tied to this seized good
-  feedbacks         Feedback[] // Feedback on the good's usage
+  requests          Request[]     
+  feedbacks         Feedback[] 
 }
 
 model Image {
@@ -109,7 +109,7 @@ model Request {
   updatedAt      DateTime      @updatedAt
 
   organization SocialOrganization @relation(fields: [organizationId], references: [id])
-  seizedGood   SeizedGood         @relation(fields: [seizedGoodId], references: [id])
+  seizedGood   SeizedGood         @relation(fields: [seizedGoodId], references: [id], onDelete: Cascade)
 }
 
 model Feedback {
@@ -122,7 +122,7 @@ model Feedback {
   updatedAt      DateTime @updatedAt
 
   organization SocialOrganization @relation(fields: [organizationId], references: [id])
-  seizedGood   SeizedGood         @relation(fields: [seizedGoodId], references: [id])
+  seizedGood   SeizedGood         @relation(fields: [seizedGoodId], references: [id], onDelete: Cascade)
 }
 
 model ContactMessage {
