@@ -67,7 +67,7 @@ export const handleDeleteRequestItem = async (req, res, next) => {
 };
 
 export const handleApproveRequest = async (req, res, next) => {
-  try {
+  try {  
     const approvedRequest = await requestService.approveRequest(req.params.id);
     res.status(200).json({
       message: "Request approved successfully.",
