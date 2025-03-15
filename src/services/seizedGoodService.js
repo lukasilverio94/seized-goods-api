@@ -88,17 +88,50 @@ export const getSeizedGoodById = async (id) => {
   return seizedGood;
 };
 
-export const updateSeizedGood = async (id, updates) => {
-  const { categoryId } = updates;
+export const updateSeizedGood = async (id, updates, files) => {
+  const { name, description, value, quantity, categoryId } = updates;
+  const data = {};
+
+  if (name) {
+    data.name = name;
+  }
+  if (description) {
+    data.description = description;
+  }
+  if (quantity) {
+    data.quantity = parseInt(quantity, 10);
+  }
+  if (value) {
+    data.value = parseFloat(value);
+  }
 
   if (categoryId) {
     const category = await seizedGoodRepository.findCategoryById(categoryId);
     if (!category) {
-      throw new AppError("Invalid Category ID provided", 404);
+      throw new AppError("Invalid categoryId provided", 404);
     }
+    data.categoryId = parseInt(categoryId);
   }
 
-  return seizedGoodRepository.updateSeizedGood(id, updates);
+  const updatedSeizedGood = await seizedGoodRepository.updateSeizedGood(
+    id,
+    data
+  );
+
+  if (files && files.length > 0) {
+    const imageUrls = await uploadImagesToCloudinary(files);
+    await Promise.all(
+      imageUrls.map((url) =>
+        seizedGoodRepository.saveImage({
+          url,
+          altText: "Seized Good Image",
+          seizedGoodId: updatedSeizedGood.id,
+        })
+      )
+    );
+  }
+
+  return updatedSeizedGood;
 };
 
 export const deleteSeizedGood = async (id, sseClients) => {

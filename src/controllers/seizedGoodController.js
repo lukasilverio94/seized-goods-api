@@ -67,59 +67,12 @@ export const handleGetSeizedGoodById = async (req, res, next) => {
 
 export const handleUpdateSeizedGood = async (req, res, next) => {
   const { id } = req.params;
-  const { name, description, value, quantity, categoryId } = req.body;
-  const files = req.files;
-
   try {
-    const data = {};
-
-    if (name) {
-      data.name = name;
-    }
-    if (description) {
-      data.description = description;
-    }
-    if (quantity) {
-      data.quantity = parseInt(quantity, 10);
-    }
-    if (value) {
-      data.value = parseFloat(value);
-    }
-
-    if (categoryId) {
-      const category = await prisma.category.findUnique({
-        where: { id: parseInt(categoryId) },
-      });
-
-      if (!category) {
-        throw new AppError("Invalid categoryId provided", 404);
-      }
-      data.categoryId = parseInt(categoryId);
-    }
-    
-    const updatedSeizedGood = await prisma.seizedGood.update({
-      where: { id: parseInt(id) },
-      include: {
-        images: true,
-        category: true,
-      },
-      data,
-    });
-
-     if (files && files.length > 0) {
-        const imageUrls = await uploadImagesToCloudinary(files);
-        await Promise.all(
-        imageUrls.map((url) =>
-        seizedGoodRepository.saveImage({
-          url,
-          altText: "Seized Good Image",
-          seizedGoodId: updatedSeizedGood.id,
-        })
-      )
+    const updatedSeizedGood = await seizedGoodService.updateSeizedGood(
+      id,
+      req.body,
+      req.files
     );
-  }
-
-
     res.status(200).json(updatedSeizedGood);
   } catch (error) {
     next(error);
